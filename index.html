@@ -5,57 +5,84 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>יאללה דבר! - משחק חברה</title>
+    <title>יאללה דבר!</title>
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#111827">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2921/2921222.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;500;700;900&display=swap" rel="stylesheet">
 
     <style>
-        /* הגדרות קריטיות למובייל */
+        /* === הגדרות בסיס מודרניות === */
+        :root {
+            --bg-color: #111827;
+            /* כחול-שחור עמוק */
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #FACC15;
+            /* צהוב מודרני */
+        }
+
         html,
         body {
             height: 100dvh;
-            /* גובה דינמי שתופס בדיוק את המסך */
             width: 100vw;
             overflow: hidden;
-            /* מניעת גלילה של כל העמוד */
             touch-action: manipulation;
-            /* ביטול זום בלחיצה כפולה */
-            -webkit-user-select: none;
-            /* מניעת סימון טקסט באייפון */
             user-select: none;
+            -webkit-user-select: none;
             font-family: 'Rubik', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #4c1d95 100%);
-            /* מניעת "הקפצה" של הגלילה באייפון */
-            overscroll-behavior: none;
+            background-color: var(--bg-color);
+            /* רקע עדין מאוד ולא צעקני */
+            background-image: radial-gradient(circle at 50% 0%, #312e81 0%, #111827 60%);
+            color: white;
         }
 
-        /* התאמת אזור התוכן */
         #app {
             height: 100%;
             width: 100%;
-            /* התחשבות ב-Notch (המגרעת למעלה באייפון) */
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* שאר העיצובים נשארים אותו דבר */
+        /* === Glassmorphism (זכוכית) === */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid transparent;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        /* === אנימציות === */
         .screen {
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             height: 100%;
             display: flex;
             flex-direction: column;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeSlideUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
 
             to {
@@ -64,18 +91,13 @@
             }
         }
 
-        button:active {
-            transform: scale(0.96);
-            transition: transform 0.1s;
-        }
-
         .card-pop {
-            animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes pop {
             0% {
-                transform: scale(0.9);
+                transform: scale(0.95);
                 opacity: 0.5;
             }
 
@@ -85,671 +107,413 @@
             }
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* מצב הזדמנות אחרונה */
         .last-chance-mode {
             animation: pulse-red 1s infinite;
             border-color: #ef4444 !important;
-            box-shadow: 0 0 30px #ef4444;
         }
 
         @keyframes pulse-red {
             0% {
-                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
             }
 
-            50% {
-                transform: scale(1.02);
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
             }
 
             100% {
-                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
             }
+        }
+
+        /* כפתורים מודרניים */
+        .btn-primary {
+            background: linear-gradient(135deg, #FACC15 0%, #EAB308 100%);
+            color: #111827;
+            box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
 
-<body class="bg-gray-900 text-white overflow-hidden h-screen w-screen selection:bg-purple-500">
+<body class="selection:bg-yellow-500 selection:text-black">
 
-    <div id="app" class="h-full w-full flex flex-col items-center justify-center p-4 relative">
+    <div id="app" class="flex flex-col relative p-6">
 
-        <button id="btn-open-rules" class="absolute top-4 left-4 z-40 text-gray-400 hover:text-yellow-400 transition"
-            onclick="toggleRules()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        </button>
-
-        <button id="btn-home"
-            class="absolute top-4 right-4 z-40 text-gray-500 hover:text-red-400 transition hidden p-2 bg-gray-900/50 rounded-full"
-            onclick="goHome()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-        </button>
-
-        <section id="screen-setup"
-            class="screen w-full max-w-md space-y-4 text-center h-full overflow-y-auto py-8 no-scrollbar">
-            <div class="flex flex-col items-center justify-center mb-8 relative">
-                <svg width="160" height="160" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"
-                    class="animate-bounce-slow drop-shadow-2xl">
-                    <defs>
-                        <linearGradient id="logo-grad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#FF4D4D" />
-                            <stop offset="1" stop-color="#F9CB28" />
-                        </linearGradient>
-                        <filter id="glow">
-                            <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="white" flood-opacity="0.5" />
-                        </filter>
-                    </defs>
-
-                    <path
-                        d="M40 60C40 37.9086 57.9086 20 80 20H120C142.091 20 160 37.9086 160 60V100C160 122.091 142.091 140 120 140H90L50 170V140H40C17.9086 140 0 122.091 0 100V60C0 37.9086 17.9086 20 40 20Z"
-                        fill="url(#logo-grad)" stroke="white" stroke-width="6" transform="translate(20, 10)" />
-
-                    <path d="M75 60L125 60" stroke="white" stroke-width="8" stroke-linecap="round" />
-                    <path d="M75 85L115 85" stroke="white" stroke-width="8" stroke-linecap="round" />
-                    <path d="M75 110L100 110" stroke="white" stroke-width="8" stroke-linecap="round" />
-
-                    <circle cx="160" cy="40" r="30" fill="#3B82F6" stroke="white" stroke-width="4" />
-                    <path d="M160 25V40L170 50" stroke="white" stroke-width="3" stroke-linecap="round" />
+        <div class="absolute top-4 left-0 w-full px-6 flex justify-between z-50 pt-[env(safe-area-inset-top)]">
+            <button id="btn-open-rules"
+                class="p-3 bg-gray-800/50 rounded-full backdrop-blur text-gray-400 hover:text-white"
+                onclick="toggleRules()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <path d="M12 17h.01" />
                 </svg>
+            </button>
+            <button id="btn-home"
+                class="hidden p-3 bg-gray-800/50 rounded-full backdrop-blur text-gray-400 hover:text-red-400"
+                onclick="goHome()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+            </button>
+        </div>
 
-                <h1 class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 tracking-tighter mt-[-20px] z-10"
-                    style="filter: drop-shadow(2px 2px 0px rgba(255,255,255,0.2));">
-                    יאללה דבר!
+        <section id="screen-setup" class="screen w-full max-w-md mx-auto pt-12 pb-6">
+
+            <div class="text-center mb-8">
+                <h1 class="text-5xl font-black text-white tracking-tighter"
+                    style="text-shadow: 0 4px 20px rgba(255,255,255,0.2);">
+                    יאללה<span class="text-yellow-400">דבר!</span>
                 </h1>
-                <p class="text-gray-400 text-sm mt-2 font-bold tracking-wide">המשחק שיגרום לכם לצעוק</p>
+                <p class="text-gray-400 text-sm mt-2 font-medium tracking-wide opacity-80">גרסת המסיבות הרשמית</p>
             </div>
 
-
-            <div class="space-y-4 bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-700">
-
-                <div id="teams-container" class="space-y-3">
-                </div>
-                <button onclick="addTeamInput()"
-                    class="text-xs text-yellow-400 hover:text-yellow-300 font-bold border border-yellow-400 rounded-lg px-4 py-2 w-full border-dashed transition hover:bg-yellow-400/10">
-                    + הוסף קבוצה
-                </button>
-
-                <hr class="border-gray-600">
-
-                <div>
-                    <label class="block text-gray-400 mb-1 text-xs">חבילת מילים</label>
-                    <select id="category-select"
-                        class="w-full bg-gray-700 text-white p-3 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-center text-lg appearance-none">
-                        <option value="general">ישראלי כללי 🇮🇱</option>
-                        <option value="army">צה"ל והייטק 🪖</option>
-                        <option value="kids">ילדים ומשפחה 🧸</option>
-                        <option value="food">אוכל ומסעדות 🍔</option>
-                        <option value="celebs">מפורסמים 🎤</option>
-                        <option value="hard">למתקדמים בלבד 🤯</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-gray-400 mb-1 text-xs">מילים אישיות (אופציונלי)</label>
-                    <textarea id="custom-words-input" rows="2"
-                        class="w-full bg-gray-700 text-white p-3 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-right text-sm"
-                        placeholder="שמות של חברים, בדיחות פרטיות (מופרד בפסיקים)..."></textarea>
-                </div>
-
-                <div class="flex gap-4">
-                    <div class="w-1/2">
-                        <label class="block text-gray-400 mb-1 text-xs">זמן (שניות)</label>
-                        <input type="number" id="round-time" value="60"
-                            class="w-full bg-gray-700 text-white p-3 rounded-xl text-center font-bold">
-                    </div>
-                    <div class="w-1/2">
-                        <label class="block text-gray-400 mb-1 text-xs">יעד לניצחון</label>
-                        <input type="number" id="winning-score" value="30"
-                            class="w-full bg-gray-700 text-white p-3 rounded-xl text-center font-bold">
-                    </div>
-                </div>
-
-                <div class="flex gap-2">
-                    <div class="w-1/2 flex items-center justify-between bg-gray-900 p-2 rounded-xl">
-                        <span class="text-xs text-gray-300">קנס על דילוג?</span>
-                        <input type="checkbox" id="penalty-mode" class="w-5 h-5 accent-yellow-400">
-                    </div>
-                    <div class="w-1/2 flex items-center justify-between bg-gray-900 p-2 rounded-xl">
-                        <span class="text-xs text-gray-300">אתגרים?</span>
-                        <input type="checkbox" id="challenge-mode" checked class="w-5 h-5 accent-purple-500">
-                    </div>
-                </div>
-            </div>
-
-            <button id="btn-start-game"
-                class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-black py-4 rounded-2xl text-xl shadow-lg transform transition active:scale-95 mb-8">
-                יאללה מתחילים! 🚀
-            </button>
-        </section>
-
-        <section id="screen-turn-intro" class="screen hidden w-full max-w-md text-center space-y-8">
-            <div class="bg-gray-800 p-8 rounded-3xl border-2 border-purple-500 shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-purple-600 text-xs px-2 py-1 rounded-bl-lg text-white">הבא בתור
-                </div>
-                <h2 class="text-2xl text-gray-300 mt-4">התור של:</h2>
-                <h3 id="current-team-display" class="text-5xl font-black text-purple-400 my-4">קבוצה א</h3>
-                <p class="text-gray-400 text-lg">ניקוד נוכחי: <span id="current-team-total-score"
-                        class="text-white font-bold">0</span></p>
-            </div>
-            <button id="btn-ready"
-                class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-5 rounded-2xl text-2xl shadow-lg transform transition active:scale-95">
-                אני מוכן! 🔥
-            </button>
-        </section>
-
-        <section id="screen-game" class="screen hidden w-full h-full flex flex-col justify-between py-6">
-            <div class="flex justify-between items-center w-full px-2">
-                <div class="text-xl font-bold text-gray-400" id="game-team-name">קבוצה א</div>
-                <div class="flex items-center">
-                    <div id="timer-display"
-                        class="text-4xl font-black text-white bg-gray-800 px-4 py-2 rounded-lg border border-gray-600 shadow-lg">
-                        60</div>
-                    <button id="btn-pause"
-                        class="bg-gray-700 p-2 rounded-lg text-white hover:bg-gray-600 transition ml-2 text-2xl h-full flex items-center justify-center">
-                        ⏸️
+            <div class="glass-panel p-6 flex-grow flex flex-col gap-4 overflow-y-auto no-scrollbar shadow-2xl">
+                <div class="space-y-3">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">מי משחק?</label>
+                    <div id="teams-container" class="space-y-2"></div>
+                    <button onclick="addTeamInput()"
+                        class="w-full py-3 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 text-sm font-bold hover:border-yellow-400 hover:text-yellow-400 transition">
+                        + הוסף קבוצה
                     </button>
                 </div>
-            </div>
 
-            <div class="flex-grow flex items-center justify-center py-4 relative">
-                <div id="word-card"
-                    class="w-full bg-white text-gray-900 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 min-h-[300px] border-4 border-gray-300 transform transition-all duration-200 mx-2 z-10 relative">
-                    <span class="absolute top-4 right-4 text-xs text-gray-400 uppercase tracking-widest font-bold">המילה
-                        שלך</span>
-                    <h2 id="current-word" class="text-5xl md:text-7xl font-black text-center leading-tight break-words">
-                        מילה</h2>
+                <div class="h-px bg-gray-700/50 my-2"></div>
 
-                    <div id="challenge-box"
-                        class="hidden mt-6 bg-purple-100 p-3 rounded-xl border-2 border-purple-300 w-full animate-bounce">
-                        <p class="text-purple-600 text-xs font-bold uppercase mb-1">⭐ אתגר מיוחד ⭐</p>
-                        <p id="challenge-text" class="text-purple-900 font-bold text-lg leading-tight"></p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">נושא
+                            המילים</label>
+                        <select id="category-select"
+                            class="w-full glass-input p-4 rounded-xl text-lg appearance-none text-center font-bold">
+                            <option value="general">🇮🇱 ישראלי כללי</option>
+                            <option value="army">🪖 צה"ל והייטק</option>
+                            <option value="kids">🧸 ילדים ומשפחה</option>
+                            <option value="food">🍔 אוכל ומסעדות</option>
+                            <option value="celebs">🎤 מפורסמים</option>
+                            <option value="hard">🤯 למתקדמים בלבד</option>
+                        </select>
                     </div>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-2 gap-4 w-full h-32 px-2 z-20">
-                <button id="btn-skip"
-                    class="bg-red-500 hover:bg-red-400 text-white rounded-2xl flex flex-col items-center justify-center shadow-lg active:bg-red-600 transition border-b-4 border-red-700 active:border-b-0 active:mt-1">
-                    <span class="text-4xl">❌</span>
-                    <span class="font-bold mt-1 text-sm opacity-90">דלג</span>
-                </button>
-                <button id="btn-correct"
-                    class="bg-green-500 hover:bg-green-400 text-white rounded-2xl flex flex-col items-center justify-center shadow-lg active:bg-green-600 transition border-b-4 border-green-700 active:border-b-0 active:mt-1">
-                    <span class="text-4xl">✅</span>
-                    <span class="font-bold mt-1 text-sm opacity-90">הצלחת!</span>
-                </button>
-            </div>
-        </section>
-
-        <section id="screen-summary"
-            class="screen hidden w-full max-w-md text-center space-y-6 h-full overflow-y-auto py-8">
-            <h2 class="text-4xl font-bold text-white mb-2">נגמר הזמן! ⏰</h2>
-
-            <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-4 shadow-xl">
-                <div class="text-lg text-gray-400">בסיבוב הזה השגתם:</div>
-                <div id="round-points" class="text-7xl font-black text-green-400 drop-shadow-lg">+5</div>
-                <hr class="border-gray-600">
-
-                <div id="scoreboard-container" class="space-y-2 pt-2">
-                </div>
-
-                <div class="mt-6 bg-gray-900/50 p-4 rounded-xl">
-                    <div class="flex justify-between text-xs text-gray-400 mb-1">
-                        <span>התקדמות ליעד</span>
-                        <span id="target-score-display">יעד: 30</span>
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">מילים משלכם
+                            (אופציונלי)</label>
+                        <textarea id="custom-words-input" rows="2"
+                            class="w-full glass-input p-3 rounded-xl text-right text-sm"
+                            placeholder="בדיחות פרטיות, שמות של חברים..."></textarea>
                     </div>
-                    <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
-                        <div id="progress-bar-fill"
-                            class="bg-gradient-to-r from-yellow-400 to-red-500 h-full w-0 transition-all duration-1000">
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">זמן (שניות)</label>
+                            <input type="number" id="round-time" value="60"
+                                class="w-full glass-input p-3 rounded-xl text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">יעד לניצחון</label>
+                            <input type="number" id="winning-score" value="30"
+                                class="w-full glass-input p-3 rounded-xl text-center font-bold text-lg">
                         </div>
                     </div>
-                    <p id="leader-text" class="text-center text-sm mt-2 text-yellow-400 font-bold">האריות מובילים!</p>
+
+                    <div class="flex gap-3">
+                        <label
+                            class="flex-1 bg-gray-800/40 p-3 rounded-xl flex items-center justify-between cursor-pointer border border-transparent hover:border-gray-600 transition">
+                            <span class="text-xs text-gray-300 font-bold">קנס בדילוג</span>
+                            <input type="checkbox" id="penalty-mode" class="w-5 h-5 accent-yellow-400">
+                        </label>
+                        <label
+                            class="flex-1 bg-gray-800/40 p-3 rounded-xl flex items-center justify-between cursor-pointer border border-transparent hover:border-gray-600 transition">
+                            <span class="text-xs text-gray-300 font-bold">אתגרים</span>
+                            <input type="checkbox" id="challenge-mode" checked class="w-5 h-5 accent-purple-500">
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <button id="btn-next-round"
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl text-xl shadow-lg transform transition active:scale-95">
-                המשך לקבוצה הבאה
-            </button>
-
-            <button id="btn-finish-now" class="mt-6 text-sm text-gray-400 underline hover:text-white transition w-full"
-                onclick="finishGameEarly()">
-                עצור הכל וסיים משחק עכשיו 🛑
+            <button id="btn-start-game" class="w-full btn-primary py-5 rounded-2xl text-xl font-black mt-4 shadow-xl">
+                יאללה מתחילים 🚀
             </button>
         </section>
 
-        <section id="screen-victory" class="screen hidden w-full max-w-md text-center space-y-8 z-10">
-            <div class="animate-bounce text-8xl">🏆</div>
-            <div>
-                <h2 class="text-3xl font-bold text-yellow-400 mb-2">יש לנו מנצחים!</h2>
-                <h1 id="winner-name" class="text-6xl font-black text-white drop-shadow-xl">האריות</h1>
+        <section id="screen-turn-intro" class="screen hidden w-full h-full justify-center items-center text-center p-4">
+            <div class="glass-panel p-10 w-full max-w-sm relative overflow-hidden">
+                <div class="absolute top-0 w-full left-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                <h2 class="text-gray-400 text-sm uppercase tracking-widest mb-2">עכשיו תור</h2>
+                <h3 id="current-team-display" class="text-5xl font-black text-white mb-6">קבוצה</h3>
+                <div class="inline-block bg-gray-800/60 px-4 py-2 rounded-lg">
+                    <span class="text-gray-400 text-sm">ניקוד נוכחי:</span>
+                    <span id="current-team-total-score" class="text-white font-bold ml-2">0</span>
+                </div>
             </div>
-            <button onclick="location.reload()"
-                class="w-full bg-white text-black font-black py-4 rounded-2xl text-xl shadow-lg mt-8 hover:bg-gray-200">
-                משחק חדש 🔄
+            <button id="btn-ready"
+                class="w-full max-w-sm mt-8 bg-white text-black py-5 rounded-2xl text-2xl font-black hover:bg-gray-100 transition shadow-xl">
+                אני מוכן 🔥
             </button>
+        </section>
+
+        <section id="screen-game" class="screen hidden w-full h-full flex flex-col pb-6 pt-12">
+
+            <div class="flex justify-between items-center w-full mb-4 px-2">
+                <div class="text-lg font-bold text-gray-400/80" id="game-team-name">שם הקבוצה</div>
+                <div class="flex items-center gap-3">
+                    <button id="btn-pause"
+                        class="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full text-white">⏸️</button>
+                    <div id="timer-display"
+                        class="text-3xl font-black text-white font-mono bg-gray-800 px-4 py-1 rounded-lg min-w-[70px] text-center">
+                        60</div>
+                </div>
+            </div>
+
+            <div class="flex-grow flex items-center justify-center py-4 w-full">
+                <div id="word-card"
+                    class="w-full h-full max-h-[50vh] bg-white text-gray-900 rounded-[32px] shadow-2xl flex flex-col items-center justify-center p-6 relative mx-2">
+                    <span class="absolute top-6 text-xs text-gray-400 uppercase tracking-widest font-bold">המילה
+                        להסביר</span>
+                    <h2 id="current-word" class="text-5xl font-black text-center leading-tight">מילה</h2>
+
+                    <div id="challenge-box"
+                        class="hidden absolute bottom-6 bg-purple-100 px-4 py-3 rounded-xl border-2 border-purple-300 w-[90%] animate-bounce">
+                        <p class="text-purple-700 text-[10px] font-bold uppercase mb-1">⭐ אתגר חובה ⭐</p>
+                        <p id="challenge-text" class="text-purple-900 font-bold text-lg leading-none"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 w-full h-28 px-2 mt-4">
+                <button id="btn-skip"
+                    class="flex-1 bg-red-500/10 border-2 border-red-500 text-red-500 rounded-2xl flex flex-col items-center justify-center active:bg-red-500 active:text-white transition duration-100">
+                    <span class="text-3xl mb-1">✕</span>
+                    <span class="font-bold text-sm">דלג</span>
+                </button>
+                <button id="btn-correct"
+                    class="flex-[1.5] bg-green-500 text-white rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-green-900/50 active:scale-95 transition duration-100">
+                    <span class="text-4xl mb-1">✓</span>
+                    <span class="font-bold text-lg">הצלחת!</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="screen-summary" class="screen hidden w-full h-full pt-12 flex flex-col pb-6">
+            <h2 class="text-3xl font-bold text-white text-center mb-6">נגמר הזמן! ⏰</h2>
+
+            <div class="glass-panel flex-grow flex flex-col p-0 overflow-hidden shadow-2xl">
+                <div class="bg-gray-800/50 p-6 text-center border-b border-gray-700">
+                    <p class="text-gray-400 text-sm mb-1">בסיבוב הזה השגתם</p>
+                    <div id="round-points" class="text-6xl font-black text-green-400">+0</div>
+                </div>
+
+                <div class="flex-grow overflow-y-auto p-4 space-y-2 no-scrollbar" id="scoreboard-container"></div>
+
+                <div class="p-4 bg-gray-900/50 border-t border-gray-700">
+                    <div class="flex justify-between text-xs text-gray-400 mb-2">
+                        <span id="leader-text" class="font-bold text-yellow-400">המובילים</span>
+                        <span id="target-score-display">יעד: 30</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div id="progress-bar-fill"
+                            class="bg-gradient-to-r from-yellow-400 to-orange-500 h-full w-0 transition-all duration-1000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 space-y-3">
+                <button id="btn-next-round"
+                    class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl text-xl shadow-lg active:scale-95 transition">
+                    הבא בתור &larr;
+                </button>
+                <button id="btn-finish-now" class="w-full text-sm text-gray-500 py-2">
+                    עצור הכל וסיים משחק
+                </button>
+            </div>
+        </section>
+
+        <section id="screen-victory" class="screen hidden w-full h-full justify-center items-center text-center p-6">
+            <div class="mb-8 animate-bounce text-9xl">🏆</div>
+            <h2 class="text-2xl font-bold text-yellow-500 mb-2 uppercase tracking-widest">המנצחים הגדולים</h2>
+            <h1 id="winner-name" class="text-6xl font-black text-white mb-12 drop-shadow-xl">השם</h1>
+
             <button id="btn-share-whatsapp"
-                class="w-full bg-green-500 text-white font-bold py-3 rounded-2xl text-xl shadow-lg mt-4 flex items-center justify-center gap-2">
-                <span>שתף בוואטסאפ</span>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                class="w-full bg-[#25D366] text-white font-bold py-4 rounded-2xl text-lg shadow-lg flex items-center justify-center gap-2 mb-3">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path
-                        d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                        d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.029.618 1.979.971 3.293.971 3.181-.001 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-6.255-5.77zM12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM16.64 17.02C16.32 17.65 15.17 17.97 14.64 17.9C14.16 17.84 13.62 17.74 11.96 17.05C10.02 16.24 8.7 14.28 8.61 14.15C8.52 14.02 7.82 13.1 7.82 12.15C7.82 11.2 8.31 10.72 8.65 10.37C8.82 10.19 9.04 10.15 9.21 10.15C9.38 10.15 9.55 10.16 9.72 10.16C9.9 10.16 10.13 10.08 10.36 10.64C10.63 11.3 11.19 12.67 11.27 12.82C11.36 12.97 11.44 13.17 11.32 13.4C11.2 13.63 11.1 13.73 10.92 13.94C10.74 14.15 10.55 14.33 10.83 14.81C11.12 15.31 12.08 16.88 13.5 18.14C14.7 19.21 15.68 19.55 16.03 19.7C16.38 19.85 16.79 19.82 17.03 19.56C17.27 19.3 18.06 18.18 18.3 17.84C18.54 17.5 18.77 17.55 19.12 17.68C19.47 17.81 21.32 18.72 21.7 18.91C22.08 19.1 22.33 19.19 22.42 19.34C22.51 19.49 22.51 20.21 22.23 21.02C21.95 21.83 21.2 22.46 20.5 22.54C20.08 22.59 19.53 22.62 18.67 22.31C16.92 21.68 13.2 19.96 10.22 15.75C9.72 15.05 9.38 14.45 8.92 13.78C8.54 13.23 7.82 12.18 7.82 10.87C7.82 9.56 8.51 8.64 9.17 7.97C9.83 7.3 10.5 7.3 10.5 7.3L11.53 7.3C11.53 7.3 12.2 7.3 13.15 9.57C14.1 11.84 14.1 11.84 14.1 11.84C14.1 11.84 14.77 12.84 14.43 13.51C14.1 14.18 13.1 15.18 12.43 15.85C11.76 16.52 11.1 16.52 11.1 16.52C11.1 16.52 13.77 21.19 18.44 21.19C18.44 21.19 19.11 21.19 19.78 20.52C20.45 19.85 21.12 18.51 21.12 18.51C21.12 18.51 21.79 18.18 22.46 18.51C23.13 18.84 24.8 19.68 24.8 19.68C24.8 19.68 25.47 20.01 25.47 20.68C25.47 21.35 25.14 23.35 22.8 24.02C20.46 24.69 19.12 24.69 19.12 24.69Z"
+                        fill="currentColor" />
                 </svg>
+                ספר לחבר'ה
             </button>
+            <button onclick="location.reload()"
+                class="w-full bg-gray-800 text-gray-300 font-bold py-4 rounded-2xl text-lg">משחק חדש</button>
         </section>
 
         <div id="modal-rules"
-            class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4">
-            <div
-                class="bg-gray-800 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto border border-gray-600 shadow-2xl relative no-scrollbar">
-                <button onclick="toggleRules()"
-                    class="absolute top-4 left-4 text-gray-400 hover:text-white bg-gray-700 rounded-full p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                <div class="p-8 text-right space-y-4 text-gray-200">
-                    <h2 class="text-3xl font-bold text-yellow-400 mb-4">חוקים ועונשים ⚖️</h2>
-                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-300">
-                        <li>יש להסביר את המילה <span class="text-white font-bold">מבלי לומר אותה</span> או את השורש שלה.
-                        </li>
-                        <li>אסור לתרגם לשפה אחרת.</li>
-                        <li>ניחוש נכון = <span class="text-green-400 font-bold">+1</span>.</li>
-                        <li>דילוג/טעות = <span class="text-red-400 font-bold">0 או -1</span> (תלוי בהגדרות).</li>
-                        <li><span class="text-purple-400 font-bold">אתגרים:</span> אם מופיע כרטיס סגול, חובה לבצע את
-                            ההוראה!</li>
-                    </ul>
-                    <button onclick="toggleRules()"
-                        class="w-full mt-8 bg-gray-700 hover:bg-gray-600 py-3 rounded-xl font-bold text-white">סגור</button>
-                </div>
+            class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-6 backdrop-blur-sm">
+            <div class="glass-panel w-full max-w-md p-6 relative">
+                <button onclick="toggleRules()" class="absolute top-4 left-4 bg-gray-700/50 rounded-full p-1"><svg
+                        width="24" height="24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                    </svg></button>
+                <h2 class="text-2xl font-black text-white mb-6 text-center">חוקים ⚖️</h2>
+                <ul class="space-y-3 text-gray-300 text-sm">
+                    <li class="flex gap-2"><span class="text-yellow-400">●</span> <span>מסבירים בלי לומר את המילה או
+                            השורש.</span></li>
+                    <li class="flex gap-2"><span class="text-yellow-400">●</span> <span>אסור לתרגם לאנגלית.</span></li>
+                    <li class="flex gap-2"><span class="text-green-400">●</span> <span>ניחוש נכון = נקודה.</span></li>
+                    <li class="flex gap-2"><span class="text-red-400">●</span> <span>דילוג = 0 (או מינוס אם
+                            בחרתם).</span></li>
+                    <li class="flex gap-2"><span class="text-purple-400">●</span> <span>כרטיס סגול = אתגר חובה!</span>
+                    </li>
+                </ul>
+                <button onclick="toggleRules()" class="w-full bg-white text-black font-bold py-3 rounded-xl mt-8">הבנתי,
+                    סגור</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // === 1. מאגר המילים (300+) ===
-        const wordPacks = {
-            general: ["פלאפל", "מטקות", "מילואים", "חתונה", "פקק תנועה", "בנימין נתניהו", "גל גדות", "נועה קירל", "הכותל", "חרמון", "תל אביב", "ים המלח", "ווטסאפ", "אינסטגרם", "טיקטוק", "Waze", "שבת", "על האש", "חופשה", "משכנתא", "כדורגל", "חדר כושר", "פיצה", "מזגן", "יתוש", "רכבת", "אוטובוס", "קפה", "סופרמרקט", "בחירות", "שוקולד", "מיקרוגל", "מקרר", "טלוויזיה", "שלט", "ספה", "מקלחת", "שמפו", "מגבת", "ים", "בריכה", "קרם הגנה", "ארטיק", "אבטיח", "מלון", "דרכון", "מטוס", "דיוטי פרי", "מזוודה", "מונית", "אופניים", "קורקינט", "קסדה", "שוטר", "רופא", "אחות", "מורה", "סטודנט", "מבחן", "שיעורי בית", "תיק", "קלמר", "עיפרון", "מחשב", "מקלדת", "עכבר", "מטען", "סוללה", "אוזניות", "רמקול", "הופעה", "כרטיס", "פופקורן", "קולנוע", "סרט", "נטפליקס", "יוטיוב", "פייסבוק", "גוגל", "אפל", "סמסונג", "טסלה", "חשמל", "מים", "חשבון בנק", "כרטיס אשראי", "מזומן", "ארנק", "מפתח", "דלת", "חלון", "וילון", "שטיח", "מנורה", "נר", "חנוכה", "סופגניה", "פסח", "מצה", "ראש השנה", "דבש", "תפוח", "רימון"],
-            army: ["מפקד", "טירונות", "רגילה", "גימלים", "שמירה", "מטווח", "חדר אוכל", "מדים", "דיסקית", "שיפצור", "פזצטא", "מסע כומתה", "סיירת מטכ\"ל", "כיפת ברזל", "שק\"ם", "רס\"ר", "מסדר", "בקו\"ם", "צו ראשון", "פטור זקן", "מילואים", "צו 8", "הקפצה", "לילה לבן", "תרגיל", "שטח", "נגמ\"ש", "טנק", "מטוס קרב", "מסוק", "צוללת", "חיל הים", "חיל האוויר", "גולני", "צנחנים", "כפיר", "נח\"ל", "גבעתי", "מודיעין", "8200", "סייבר", "הייטק", "אקזיט", "סטארטאפ", "יוניקורן", "משקיע", "מניות", "אופציות", "מתכנת", "באג", "קוד", "שרת", "ענן", "זום", "סלאק", "לינקדאין", "קורות חיים", "ראיון עבודה", "פיטורים", "בוס", "משכורת", "בונוס", "רכב חברה", "סיבוס", "תן ביס"],
-            kids: ["כלב", "חתול", "בית ספר", "גלידה", "שוקולד", "אמא", "אבא", "סבתא", "יום הולדת", "בלון", "מתנה", "כדור", "בובה", "גן שעשועים", "נדנדה", "אופניים", "בריכה", "ים", "שמש", "ירח", "פיל", "אריה", "טוסט", "מיץ", "חלב", "קורנפלקס", "עוגה", "נר", "ליצן", "קוסם", "ארנב", "צב", "ג'ירפה", "קוף", "בננה", "תפוח", "תפוז", "ענבים", "אבטיח", "פיצה", "המבורגר", "צ'יפס", "קטשופ", "סוכריה", "מסטיק", "שיניים", "מברשת שיניים", "פיג'מה", "מיטה", "כרית", "שמיכה", "דובי", "לגו", "פאזל", "ציור", "טושים", "צבעים", "מחברת", "תיק אוכל", "בקבוק מים", "סנדוויץ'", "גן", "גננת", "חבר", "חברה", "משחק", "מחבואים", "תופסת", "כדורגל", "כדורסל", "שער"],
-            food: ["חומוס", "שווארמה", "פלאפל", "סביח", "שקשוקה", "ג'חנון", "מלוואח", "קובנה", "חמין", "גפילטע פיש", "חריימה", "דג", "סטייק", "קבב", "נקניקיה", "המבורגר", "צ'יפס", "פיצה", "פסטה", "רביולי", "סושי", "נודלס", "מוקפץ", "אגרול", "מרק", "סלט", "לחם", "פיתה", "לאפה", "בגט", "חמאה", "גבינה", "יוגורט", "חלב", "קפה", "תה", "קולה", "בירה", "יין", "וויסקי", "וודקה", "ערק", "שוקולד", "גלידה", "עוגה", "עוגייה", "קרואסון", "בורקס", "רוגלך", "כנאפה", "בקלאווה"],
-            celebs: ["בנימין נתניהו", "יאיר לפיד", "נפתלי בנט", "אייל גולן", "עומר אדם", "נועה קירל", "סטטיק", "בן אל", "אסי עזר", "רותם סלע", "בר רפאלי", "גל גדות", "נטלי פורטמן", "ליאונרדו דיקפריו", "בראד פיט", "אנג'לינה ג'ולי", "ביונסה", "טיילור סוויפט", "ג'סטין ביבר", "כריסטיאנו רונאלדו", "ליונל מסי", "ניימאר", "לברון ג'יימס", "מייקל ג'ורדן", "ערן זהבי", "מנור סולומון", "דני אבדיה", "חיים אתגר", "אופירה אסייג", "אייל ברקוביץ'", "גיא פינס", "ארז טל", "אדיר מילר", "שחר חסון"],
-            hard: ["אוקסימורון", "סטטוס קוו", "בירוקרטיה", "אינפלציה", "קונפליקט", "פרדוקס", "מטאפורה", "פרוטוקול", "אלגוריתם", "קוגניציה", "אסימטריה", "דמוגרפיה", "היפותזה", "ציניות", "אקלקטי", "נוסטלגיה", "אופוריה", "מלנכוליה", "אמביוולנטי", "פרגמטי", "אלטרואיזם", "אגואיזם", "נרקיסיזם", "הדוניזם", "סוציאליזם", "קפיטליזם", "גלובליזציה", "אינטגרציה", "סגרגציה", "אפליה", "שוויון", "חירות", "דמוקרטיה", "דיקטטורה", "אנרכיה", "מונרכיה", "תיאולוגיה", "פילוסופיה", "פסיכולוגיה", "סוציולוגיה", "אנתרופולוגיה", "ארכיאולוגיה", "פיזיקה", "כימיה", "ביולוגיה"]
-        };
+        const wordPacks = { general: ["פלאפל", "מטקות", "מילואים", "חתונה", "פקק תנועה", "בנימין נתניהו", "גל גדות", "נועה קירל", "הכותל", "חרמון", "תל אביב", "ים המלח", "ווטסאפ", "אינסטגרם", "טיקטוק", "Waze", "שבת", "על האש", "חופשה", "משכנתא", "כדורגל", "חדר כושר", "פיצה", "מזגן", "יתוש", "רכבת", "אוטובוס", "קפה", "סופרמרקט", "בחירות", "שוקולד", "מיקרוגל", "מקרר", "טלוויזיה", "שלט", "ספה", "מקלחת", "שמפו", "מגבת", "ים", "בריכה", "קרם הגנה", "ארטיק", "אבטיח", "מלון", "דרכון", "מטוס", "דיוטי פרי", "מזוודה", "מונית", "אופניים", "קורקינט", "קסדה", "שוטר", "רופא", "אחות", "מורה", "סטודנט", "מבחן", "שיעורי בית", "תיק", "קלמר", "עיפרון", "מחשב", "מקלדת", "עכבר", "מטען", "סוללה", "אוזניות", "רמקול", "הופעה", "כרטיס", "פופקורן", "קולנוע", "סרט", "נטפליקס", "יוטיוב", "פייסבוק", "גוגל", "אפל", "סמסונג", "טסלה", "חשמל", "מים", "חשבון בנק", "כרטיס אשראי", "מזומן", "ארנק", "מפתח", "דלת", "חלון", "וילון", "שטיח", "מנורה", "נר", "חנוכה", "סופגניה", "פסח", "מצה", "ראש השנה", "דבש", "תפוח", "רימון"], army: ["מפקד", "טירונות", "רגילה", "גימלים", "שמירה", "מטווח", "חדר אוכל", "מדים", "דיסקית", "שיפצור", "פזצטא", "מסע כומתה", "סיירת מטכ\"ל", "כיפת ברזל", "שק\"ם", "רס\"ר", "מסדר", "בקו\"ם", "צו ראשון", "פטור זקן", "מילואים", "צו 8", "הקפצה", "לילה לבן", "תרגיל", "שטח", "נגמ\"ש", "טנק", "מטוס קרב", "מסוק", "צוללת", "חיל הים", "חיל האוויר", "גולני", "צנחנים", "כפיר", "נח\"ל", "גבעתי", "מודיעין", "8200", "סייבר", "הייטק", "אקזיט", "סטארטאפ", "יוניקורן", "משקיע", "מניות", "אופציות", "מתכנת", "באג", "קוד", "שרת", "ענן", "זום", "סלאק", "לינקדאין", "קורות חיים", "ראיון עבודה", "פיטורים", "בוס", "משכורת", "בונוס", "רכב חברה", "סיבוס", "תן ביס"], kids: ["כלב", "חתול", "בית ספר", "גלידה", "שוקולד", "אמא", "אבא", "סבתא", "יום הולדת", "בלון", "מתנה", "כדור", "בובה", "גן שעשועים", "נדנדה", "אופניים", "בריכה", "ים", "שמש", "ירח", "פיל", "אריה", "טוסט", "מיץ", "חלב", "קורנפלקס", "עוגה", "נר", "ליצן", "קוסם", "ארנב", "צב", "ג'ירפה", "קוף", "בננה", "תפוח", "תפוז", "ענבים", "אבטיח", "פיצה", "המבורגר", "צ'יפס", "קטשופ", "סוכריה", "מסטיק", "שיניים", "מברשת שיניים", "פיג'מה", "מיטה", "כרית", "שמיכה", "דובי", "לגו", "פאזל", "ציור", "טושים", "צבעים", "מחברת", "תיק אוכל", "בקבוק מים", "סנדוויץ'", "גן", "גננת", "חבר", "חברה", "משחק", "מחבואים", "תופסת", "כדורגל", "כדורסל", "שער"], food: ["חומוס", "שווארמה", "פלאפל", "סביח", "שקשוקה", "ג'חנון", "מלוואח", "קובנה", "חמין", "גפילטע פיש", "חריימה", "דג", "סטייק", "קבב", "נקניקיה", "המבורגר", "צ'יפס", "פיצה", "פסטה", "רביולי", "סושי", "נודלס", "מוקפץ", "אגרול", "מרק", "סלט", "לחם", "פיתה", "לאפה", "בגט", "חמאה", "גבינה", "יוגורט", "חלב", "קפה", "תה", "קולה", "בירה", "יין", "וויסקי", "וודקה", "ערק", "שוקולד", "גלידה", "עוגה", "עוגייה", "קרואסון", "בורקס", "רוגלך", "כנאפה", "בקלאווה"], celebs: ["בנימין נתניהו", "יאיר לפיד", "נפתלי בנט", "אייל גולן", "עומר אדם", "נועה קירל", "סטטיק", "בן אל", "אסי עזר", "רותם סלע", "בר רפאלי", "גל גדות", "נטלי פורטמן", "ליאונרדו דיקפריו", "בראד פיט", "אנג'לינה ג'ולי", "ביונסה", "טיילור סוויפט", "ג'סטין ביבר", "כריסטיאנו רונאלדו", "ליונל מסי", "ניימאר", "לברון ג'יימס", "מייקל ג'ורדן", "ערן זהבי", "מנור סולומון", "דני אבדיה", "חיים אתגר", "אופירה אסייג", "אייל ברקוביץ'", "גיא פינס", "ארז טל", "אדיר מילר", "שחר חסון"], hard: ["אוקסימורון", "סטטוס קוו", "בירוקרטיה", "אינפלציה", "קונפליקט", "פרדוקס", "מטאפורה", "פרוטוקול", "אלגוריתם", "קוגניציה", "אסימטריה", "דמוגרפיה", "היפותזה", "ציניות", "אקלקטי", "נוסטלגיה", "אופוריה", "מלנכוליה", "אמביוולנטי", "פרגמטי", "אלטרואיזם", "אגואיזם", "נרקיסיזם", "הדוניזם", "סוציאליזם", "קפיטליזם", "גלובליזציה", "אינטגרציה", "סגרגציה", "אפליה", "שוויון", "חירות", "דמוקרטיה", "דיקטטורה", "אנרכיה", "מונרכיה", "תיאולוגיה", "פילוסופיה", "פסיכולוגיה", "סוציולוגיה", "אנתרופולוגיה", "ארכיאולוגיה", "פיזיקה", "כימיה", "ביולוגיה"] };
+        const challenges = ["הסבר בלחישה בלבד 🤫", "הסבר בלי ידיים 🗿", "הסבר עם אף סתום 👃", "שדרן כדורגל נלהב ⚽", "קול של רובוט 🤖", "קפוץ במקום 🦘", "פרצוף כועס 😡", "לשיר את ההסבר 🎵"];
 
-        const challenges = [
-            "הסבר בלחישה בלבד 🤫", "הסבר בלי להזיז ידיים 🗿", "הסבר עם אף סתום 👃", "שדרן כדורגל נלהב ⚽",
-            "הסבר בקול של רובוט 🤖", "קפוץ במקום תוך כדי 🦘", "פרצוף כועס כל הזמן 😡", "לשיר את ההסבר 🎵"
-        ];
+        let gameState = { teams: [{ name: "קבוצה 1", score: 0 }, { name: "קבוצה 2", score: 0 }], config: { time: 60, winScore: 30, pack: 'general', penalty: false, useChallenges: true }, currentWordList: [], currentTeam: 0, roundScore: 0, timer: 60, interval: null, isPlaying: false, isPaused: false };
 
-        // === 2. ניהול מצב משחק ===
-        let gameState = {
-            teams: [{ name: "קבוצה 1", score: 0 }, { name: "קבוצה 2", score: 0 }],
-            config: { time: 60, winScore: 30, pack: 'general', penalty: false, useChallenges: true },
-            currentWordList: [],
-            currentTeam: 0,
-            roundScore: 0,
-            timer: 60,
-            interval: null,
-            isPlaying: false,
-            isPaused: false
-        };
-
-        // === 3. פונקציות סאונד ורטט ===
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playTone(f, t, d) {
-            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-            o.type = t; o.frequency.value = f; g.gain.value = 0.1;
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d);
-            o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+        function playTone(f, t, d) { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = t; o.frequency.value = f; g.gain.value = 0.1; g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d) }
+        function vibrate(p) { if (navigator.vibrate) navigator.vibrate(p) }
+
+        const screens = { setup: document.getElementById('screen-setup'), turnIntro: document.getElementById('screen-turn-intro'), game: document.getElementById('screen-game'), summary: document.getElementById('screen-summary'), victory: document.getElementById('screen-victory') };
+        function showScreen(n) {
+            Object.values(screens).forEach(e => e.classList.add('hidden')); screens[n].classList.remove('hidden');
+            document.getElementById('btn-home').style.display = (n === 'setup' ? 'none' : 'block');
         }
 
-        function vibrate(pattern) {
-            if (navigator.vibrate) navigator.vibrate(pattern);
-        }
-
-        // === 4. ניהול מסכים וקבוצות ===
-        const screens = {
-            setup: document.getElementById('screen-setup'),
-            turnIntro: document.getElementById('screen-turn-intro'),
-            game: document.getElementById('screen-game'),
-            summary: document.getElementById('screen-summary'),
-            victory: document.getElementById('screen-victory')
-        };
-
-        function showScreen(name) {
-            Object.values(screens).forEach(el => el.classList.add('hidden'));
-            screens[name].classList.remove('hidden');
-            document.getElementById('btn-open-rules').style.display = (name === 'game') ? 'none' : 'block';
-        }
-
-        function toggleRules() { document.getElementById('modal-rules').classList.toggle('hidden'); }
+        function toggleRules() { document.getElementById('modal-rules').classList.toggle('hidden') }
+        function goHome() { if (confirm("לצאת למסך הראשי? המשחק יתאפס.")) location.reload() }
 
         function renderTeamInputs() {
-            const container = document.getElementById('teams-container');
-            container.innerHTML = `<label class="block text-gray-400 text-xs mb-1">קבוצות</label>`;
-            gameState.teams.forEach((team, index) => {
-                const div = document.createElement('div');
-                div.className = "flex gap-2 mb-2";
-                const input = document.createElement('input');
-                input.type = "text"; input.value = team.name;
-                input.className = "w-full bg-gray-700 text-white p-3 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-center text-lg";
-                input.onchange = (e) => { gameState.teams[index].name = e.target.value; };
-                if (gameState.teams.length > 2) {
-                    const btnDel = document.createElement('button');
-                    btnDel.innerText = "🗑️"; btnDel.className = "bg-red-500/20 text-red-500 p-2 rounded-xl";
-                    btnDel.onclick = () => removeTeam(index);
-                    div.appendChild(input); div.appendChild(btnDel);
-                } else { div.appendChild(input); }
-                container.appendChild(div);
+            const c = document.getElementById('teams-container'); c.innerHTML = '';
+            gameState.teams.forEach((t, i) => {
+                const d = document.createElement('div'); d.className = "flex gap-2";
+                d.innerHTML = `<input type="text" value="${t.name}" onchange="gameState.teams[${i}].name=this.value" class="glass-input w-full p-3 rounded-xl text-center"><button class="text-red-400 p-2 hover:bg-red-400/10 rounded-xl" onclick="removeTeam(${i})">🗑️</button>`;
+                c.appendChild(d);
             });
         }
-        function addTeamInput() { gameState.teams.push({ name: `קבוצה ${gameState.teams.length + 1}`, score: 0 }); renderTeamInputs(); }
-        function removeTeam(index) { if (gameState.teams.length <= 2) return; gameState.teams.splice(index, 1); renderTeamInputs(); }
-        renderTeamInputs(); // אתחול
+        function addTeamInput() { gameState.teams.push({ name: `קבוצה ${gameState.teams.length + 1}`, score: 0 }); renderTeamInputs() }
+        function removeTeam(i) { if (gameState.teams.length > 2) { gameState.teams.splice(i, 1); renderTeamInputs() } }
+        renderTeamInputs();
 
-        function getRandomWord() {
-            return gameState.currentWordList[Math.floor(Math.random() * gameState.currentWordList.length)];
-        }
-
-        // === 5. לוגיקת משחק ===
-        document.getElementById('btn-start-game').addEventListener('click', () => {
+        document.getElementById('btn-start-game').onclick = () => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            // טעינת הגדרות
+            try { if ('wakeLock' in navigator) navigator.wakeLock.request('screen') } catch (e) { }
             gameState.config.time = parseInt(document.getElementById('round-time').value) || 60;
             gameState.config.winScore = parseInt(document.getElementById('winning-score').value) || 30;
             gameState.config.penalty = document.getElementById('penalty-mode').checked;
             gameState.config.useChallenges = document.getElementById('challenge-mode').checked;
-
-            // בניית רשימת מילים + מילים אישיות
-            const packName = document.getElementById('category-select').value;
-            let words = [...wordPacks[packName]];
-            const customInput = document.getElementById('custom-words-input').value;
-            if (customInput.trim().length > 0) {
-                const customWords = customInput.split(/,|\n/).map(w => w.trim()).filter(w => w.length > 0);
-                if (customWords.length > 0) words = words.concat(customWords);
-            }
-            gameState.currentWordList = words;
-
-            // איפוס
-            gameState.currentTeam = 0;
-            gameState.teams.forEach(t => t.score = 0);
-
-            // הצגת כפתור הבית
-            document.getElementById('btn-home').classList.remove('hidden');
-
+            let w = [...wordPacks[document.getElementById('category-select').value]];
+            const c = document.getElementById('custom-words-input').value;
+            if (c.trim().length > 0) w = w.concat(c.split(/,|\n/).map(s => s.trim()).filter(s => s.length));
+            gameState.currentWordList = w;
+            gameState.currentTeam = 0; gameState.teams.forEach(t => t.score = 0);
+            document.getElementById('btn-home').style.display = 'block';
             prepareTurn();
-
-            // נסה להפעיל Wake Lock כשהמשחק מתחיל
-            try {
-                if ('wakeLock' in navigator) {
-                    navigator.wakeLock.request('screen').then(() => {
-                        console.log('Screen Wake Lock active');
-                    });
-                }
-            } catch (err) {
-                console.log('Wake Lock not supported');
-            }
-        });
+        };
 
         function prepareTurn() {
-            const team = gameState.teams[gameState.currentTeam];
-            document.getElementById('current-team-display').innerText = team.name;
-            document.getElementById('current-team-total-score').innerText = team.score;
+            const t = gameState.teams[gameState.currentTeam];
+            document.getElementById('current-team-display').innerText = t.name;
+            document.getElementById('current-team-total-score').innerText = t.score;
             showScreen('turnIntro');
         }
 
-        document.getElementById('btn-ready').addEventListener('click', () => {
-            gameState.roundScore = 0;
-            gameState.timer = gameState.config.time;
-            gameState.isPlaying = true;
-
-            // איפוס ויזואלי של טיימר והזדמנות אחרונה
-            const timerEl = document.getElementById('timer-display');
-            timerEl.classList.remove('bg-red-600', 'animate-pulse', 'last-chance-mode');
-            timerEl.classList.add('bg-gray-800');
+        document.getElementById('btn-ready').onclick = () => {
+            gameState.roundScore = 0; gameState.timer = gameState.config.time; gameState.isPlaying = true; gameState.isPaused = false;
+            document.getElementById('timer-display').className = "text-3xl font-black text-white font-mono bg-gray-800 px-4 py-1 rounded-lg min-w-[70px] text-center";
             document.getElementById('screen-game').classList.remove('last-chance-mode');
-
             document.getElementById('game-team-name').innerText = gameState.teams[gameState.currentTeam].name;
-            updateTimer();
-            nextWord();
-            showScreen('game');
+            updateTimer(); nextWord(); showScreen('game');
+            gameState.interval = setInterval(() => { if (!gameState.isPaused) { gameState.timer--; updateTimer(); if (gameState.timer <= 0) { clearInterval(gameState.interval); enableLastChance() } } }, 1000);
+        };
 
-            gameState.interval = setInterval(() => {
-                if (!gameState.isPaused) {
-                    gameState.timer--;
-                    updateTimer();
-                    if (gameState.timer <= 0) {
-                        clearInterval(gameState.interval);
-                        enableLastChanceMode(); // כניסה למצב הזדמנות אחרונה
-                    }
-                }
-            }, 1000);
-        });
+        document.getElementById('btn-pause').onclick = () => {
+            gameState.isPaused = !gameState.isPaused;
+            const b = document.getElementById('btn-pause'), c = document.getElementById('word-card');
+            if (gameState.isPaused) { b.innerText = "▶️"; c.classList.add('opacity-0'); } else { b.innerText = "⏸️"; c.classList.remove('opacity-0'); }
+        };
 
-        function enableLastChanceMode() {
-            const timerEl = document.getElementById('timer-display');
-            timerEl.innerText = "0";
-            timerEl.classList.remove('bg-gray-800');
-            timerEl.classList.add('bg-red-600', 'animate-pulse');
+        function enableLastChance() {
+            const t = document.getElementById('timer-display'); t.innerText = "0"; t.className = "text-3xl font-black text-red-500 font-mono bg-gray-800 px-4 py-1 rounded-lg min-w-[70px] text-center animate-pulse";
             document.getElementById('screen-game').classList.add('last-chance-mode');
-
-            playTone(300, 'sawtooth', 0.8); // צפצוף ארוך
-            vibrate([200, 100, 200]);
+            playTone(300, 'sawtooth', 0.8); vibrate([200, 100, 200]);
         }
-
         function updateTimer() {
-            const el = document.getElementById('timer-display');
-            el.innerText = gameState.timer;
-            if (gameState.timer <= 10 && gameState.timer > 0) {
-                el.className = "text-4xl font-black text-red-500 bg-gray-800 px-4 py-2 rounded-lg border border-red-500 scale-110 transition-transform";
-                playTone(800, 'square', 0.05);
-                vibrate(50); // רטט קצר בכל שנייה בסוף
-            } else if (gameState.timer > 10) {
-                el.className = "text-4xl font-black text-white bg-gray-800 px-4 py-2 rounded-lg border border-gray-600 shadow-lg";
-            }
+            const e = document.getElementById('timer-display'); e.innerText = gameState.timer;
+            if (gameState.timer <= 10 && gameState.timer > 0) { e.classList.add('text-red-500'); playTone(800, 'square', 0.05); vibrate(50) }
         }
-
         function nextWord() {
-            const card = document.getElementById('word-card');
-            const challengeBox = document.getElementById('challenge-box');
-
-            card.classList.remove('card-pop');
-            void card.offsetWidth; card.classList.add('card-pop');
-
-            document.getElementById('current-word').innerText = getRandomWord();
-
-            // לוגיקת אתגרים (סיכוי של 20%)
+            const c = document.getElementById('word-card'), cb = document.getElementById('challenge-box');
+            c.classList.remove('card-pop'); void c.offsetWidth; c.classList.add('card-pop');
+            document.getElementById('current-word').innerText = gameState.currentWordList[Math.floor(Math.random() * gameState.currentWordList.length)];
             if (gameState.config.useChallenges && Math.random() < 0.2) {
-                const chal = challenges[Math.floor(Math.random() * challenges.length)];
-                document.getElementById('challenge-text').innerText = chal;
-                challengeBox.classList.remove('hidden');
-                card.classList.add('border-purple-500');
-                card.classList.remove('border-gray-300');
-                playTone(1000, 'triangle', 0.2);
-            } else {
-                challengeBox.classList.add('hidden');
-                card.classList.remove('border-purple-500');
-                card.classList.add('border-gray-300');
-            }
+                document.getElementById('challenge-text').innerText = challenges[Math.floor(Math.random() * challenges.length)];
+                cb.classList.remove('hidden'); c.classList.add('border-purple-500', 'border-4'); playTone(1000, 'triangle', 0.2);
+            } else { cb.classList.add('hidden'); c.classList.remove('border-purple-500', 'border-4'); }
         }
-
-        // טיפול בכפתורים (כולל הזדמנות אחרונה)
-        function handleAction(isCorrect) {
+        function handleAction(corr) {
             if (!gameState.isPlaying || gameState.isPaused) return;
-
-            if (isCorrect) {
-                playTone(600, 'sine', 0.1);
-                vibrate(50); // רטט נעים
-                gameState.roundScore++;
-            } else {
-                playTone(150, 'sawtooth', 0.3);
-                vibrate([50, 50, 50]); // רטט מעצבן
-                if (gameState.config.penalty) gameState.roundScore--;
-            }
-
-            // אם הזמן נגמר, זו הייתה הפעולה האחרונה
-            if (gameState.timer <= 0) {
-                endTurn();
-            } else {
-                nextWord();
-            }
+            if (corr) { playTone(600, 'sine', 0.1); vibrate(50); gameState.roundScore++ }
+            else { playTone(150, 'sawtooth', 0.3); vibrate([50, 50]); if (gameState.config.penalty) gameState.roundScore-- }
+            if (gameState.timer <= 0) endTurn(); else nextWord();
         }
-
         document.getElementById('btn-correct').onclick = () => handleAction(true);
         document.getElementById('btn-skip').onclick = () => handleAction(false);
 
         function endTurn() {
             gameState.isPlaying = false;
-
-            // עדכון ניקוד לקבוצה הנוכחית
-            const currentTeamObj = gameState.teams[gameState.currentTeam];
-            currentTeamObj.score += gameState.roundScore;
-
-            // הצגת הניקוד שהושג בסיבוב
+            gameState.teams[gameState.currentTeam].score += gameState.roundScore;
             document.getElementById('round-points').innerText = (gameState.roundScore >= 0 ? "+" : "") + gameState.roundScore;
-
-            // === חישוב מובילים ועדכון בר התקדמות (חדש!) ===
-            const winningScore = gameState.config.winScore;
-            document.getElementById('target-score-display').innerText = `יעד לניצחון: ${winningScore}`;
-
-            // מציאת הקבוצה עם הניקוד הגבוה ביותר
-            let maxScore = -9999;
-            let leaderName = "";
-
-            // בניית טבלת הניקוד
-            const scoreContainer = document.getElementById('scoreboard-container');
-            scoreContainer.innerHTML = '';
-
-            // מיון הקבוצות מהגבוה לנמוך
-            const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
-
-            sortedTeams.forEach(t => {
-                // עדכון המוביל
-                if (t.score > maxScore) {
-                    maxScore = t.score;
-                    leaderName = t.name;
-                }
-
-                // יצירת שורה בטבלה
-                const row = document.createElement('div');
-                row.className = "flex justify-between items-center bg-gray-700/50 p-2 rounded-lg";
-                // הדגשת הקבוצה ששיחקה עכשיו
-                const isJustPlayed = (t.name === currentTeamObj.name);
-                row.innerHTML = `
-                    <span class="text-sm ${isJustPlayed ? 'text-yellow-400 font-bold' : 'text-gray-300'}">
-                        ${t.name} ${isJustPlayed ? '👈' : ''}
-                    </span>
-                    <span class="text-xl font-bold text-white">${t.score}</span>
-                `;
-                scoreContainer.appendChild(row);
+            const sc = document.getElementById('scoreboard-container'); sc.innerHTML = '';
+            const sorted = [...gameState.teams].sort((a, b) => b.score - a.score);
+            sorted.forEach((t, i) => {
+                const isCurr = t.name === gameState.teams[gameState.currentTeam].name;
+                sc.innerHTML += `<div class="flex justify-between items-center p-3 rounded-xl ${isCurr ? 'bg-gray-700 border border-yellow-400' : 'bg-gray-800/50'}"><div class="flex items-center gap-3"><span class="font-bold text-gray-500">#${i + 1}</span><span class="font-bold text-white">${t.name}</span></div><span class="text-xl font-black text-white">${t.score}</span></div>`;
             });
-
-            // עדכון הגרף
-            const percentage = Math.min(100, (maxScore / winningScore) * 100);
-            document.getElementById('progress-bar-fill').style.width = `${percentage}%`;
-            document.getElementById('leader-text').innerText = `${leaderName} הכי קרובים לניצחון! (${maxScore}/${winningScore})`;
-
-            // === מעבר מסך ===
+            const max = sorted[0].score, win = gameState.config.winScore;
+            const pct = Math.min(100, (max / win) * 100);
+            document.getElementById('target-score-display').innerText = `יעד: ${win}`;
+            document.getElementById('progress-bar-fill').style.width = `${pct}%`;
+            document.getElementById('leader-text').innerText = `${sorted[0].name} בראש!`;
             showScreen('summary');
         }
 
-        document.getElementById('btn-next-round').addEventListener('click', () => {
-            if (gameState.teams[gameState.currentTeam].score >= gameState.config.winScore) {
-                document.getElementById('winner-name').innerText = gameState.teams[gameState.currentTeam].name;
-                showScreen('victory');
-                fireConfetti();
-                return;
-            }
-            gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length;
-            prepareTurn();
-        });
+        document.getElementById('btn-next-round').onclick = () => {
+            if (gameState.teams.some(t => t.score >= gameState.config.winScore)) finishGame();
+            else { gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length; prepareTurn() }
+        };
+        document.getElementById('btn-finish-now').onclick = () => { if (confirm("לסיים משחק?")) finishGame() };
 
-        function fireConfetti() {
-            const duration = 3000, end = Date.now() + duration;
-            (function frame() {
-                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#fbbf24', '#ef4444', '#3b82f6'] });
-                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#fbbf24', '#ef4444', '#3b82f6'] });
-                if (Date.now() < end) requestAnimationFrame(frame);
-            }());
+        function finishGame() {
+            const sorted = [...gameState.teams].sort((a, b) => b.score - a.score);
+            document.getElementById('winner-name').innerText = sorted[0].score === sorted[1].score ? "תיקו!" : sorted[0].name;
+            showScreen('victory');
+            const end = Date.now() + 3000; (function f() { confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } }); confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } }); if (Date.now() < end) requestAnimationFrame(f) }());
         }
 
-        document.getElementById('btn-pause').addEventListener('click', () => {
-            gameState.isPaused = !gameState.isPaused;
-            const btn = document.getElementById('btn-pause');
-            const overlay = document.getElementById('word-card'); // נסתיר את המילה כדי שלא ירמו בזמן הפסקה
-
-            if (gameState.isPaused) {
-                btn.innerText = "▶️";
-                overlay.classList.add('opacity-0'); // הסתרת מילה
-                // document.body.classList.add('bg-gray-800'); // This might conflict with our gradient, let's skip background change
-                alert("המשחק מושהה! לחץ אישור כשמוכנים להמשיך"); // עוצר הכל
-            } else {
-                btn.innerText = "⏸️";
-                overlay.classList.remove('opacity-0');
-                // document.body.classList.remove('bg-gray-800');
-            }
-        });
-
-        document.getElementById('btn-share-whatsapp').addEventListener('click', () => {
-            const winner = document.getElementById('winner-name').innerText;
-            const text = `הקבוצה שלי (${winner}) הרגע ניצחה במשחק Milla Time! 🏆🔥\nבואו נראה אתכם מנצחים אותנו...`;
-            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        });
-
-        // === לוגיקה ליציאה וסיום ===
-
-        // 1. כפתור בית - מחזיר להתחלה
-        function goHome() {
-            if (confirm("בטוח שרוצים לצאת? המשחק הנוכחי יתאפס.")) {
-                // הדרך הכי נקייה לאפס הכל היא לרענן את הדף
-                location.reload();
-            }
-        }
-
-        // 3. כפתור "סיים משחק עכשיו"
-        document.getElementById('btn-finish-now').addEventListener('click', () => {
-            if (confirm("לסיים את המשחק עכשיו ולהכתיר את המנצח הנוכחי?")) {
-                // מציאת הקבוצה המובילה
-                let winner = gameState.teams[0];
-                let maxScore = -9999;
-                let isTie = false;
-
-                gameState.teams.forEach(t => {
-                    if (t.score > maxScore) {
-                        maxScore = t.score;
-                        winner = t;
-                        isTie = false;
-                    } else if (t.score === maxScore) {
-                        isTie = true;
-                    }
-                });
-
-                if (isTie) {
-                    document.getElementById('winner-name').innerText = "תיקו!";
-                } else {
-                    document.getElementById('winner-name').innerText = winner.name;
-                }
-
-                showScreen('victory');
-                fireConfetti();
-            }
-        });
+        document.getElementById('btn-share-whatsapp').onclick = () => {
+            const w = document.getElementById('winner-name').innerText;
+            window.open(`https://wa.me/?text=${encodeURIComponent(`הקבוצה שלי (${w}) נתנה בראש וניצחה במשחק "יאללה דבר!" 🏆🔥\nבואו נראה אתכם...`)}`, '_blank');
+        };
     </script>
 </body>
 
