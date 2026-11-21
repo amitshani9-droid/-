@@ -674,7 +674,14 @@
       if (wa) {
         const email = document.getElementById("fieldEmail");
         const msg = `ליד חדש מהאתר של ${form.dataset.property || "הנכס"} 🏡\nשם: ${name.value.trim()}\nטלפון: ${phone.value.trim()}` + (email && email.value.trim() ? `\nאימייל: ${email.value.trim()}` : "");
-        window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
+        feedback.innerHTML = "";
+        const link = document.createElement("a");
+        link.href = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`; link.target = "_blank"; link.rel = "noopener";
+        link.className = "btn ds-btn"; link.style.display = "inline-block"; link.style.marginTop = "8px";
+        link.textContent = "✓ לחצו לשליחה בוואטסאפ";
+        feedback.className = "form-feedback form-feedback--success"; feedback.appendChild(link);
+        form.reset();
+        return;
       }
       showFeedback("תודה! פנייתכם התקבלה. ניצור קשר בהקדם.", "success");
       form.reset();

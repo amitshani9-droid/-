@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>מעוף | אתרי נדל"ן קולנועיים לסוכנים ויזמים</title>
+  <title>מעוף | אתרי נדל"ן קולנועיים</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
   <meta name="description" content="אתר קולנועי לנכס שלכם: הקונה גולל ו'טס' לתוך הבית. מוכן תוך 72 שעות, הלידים מגיעים ישר לוואטסאפ. לסוכני נדל&quot;ן ויזמים.">
   <meta property="og:title" content="מעוף | הנכס שלכם, כמו בסרט">
   <meta property="og:description" content="אתר קולנועי שהקונה 'טס' לתוכו בגלילה. מוכן תוך 72 שעות. ראו דוגמה חיה.">
@@ -17,6 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
+      color-scheme: dark;
       --bg: #0b0f13; --bg2: #111720; --card: #151c26; --line: rgba(255,255,255,.09);
       --fg: #f3f1ec; --muted: #9aa3ad; --accent: #e9b872; --accent2: #f3d3a1; --ok: #4ade80;
       --r: 18px;
@@ -25,7 +27,7 @@
     html { scroll-behavior: smooth; }
     body { font-family: "Heebo", system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
     a { color: inherit; text-decoration: none; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 26px; border-radius: 999px; font-weight: 700; font-size: 16px; border: 0; cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .2s, background .2s; }
     .btn:active { transform: scale(.97); }
     .btn-gold { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #1a1205; box-shadow: 0 12px 40px -12px rgba(233,184,114,.6); }
@@ -133,11 +135,11 @@
     footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
     /* floating wa */
-    .fab { position: fixed; bottom: 20px; left: 20px; z-index: 60; width: 58px; height: 58px; border-radius: 50%; background: #25d366; display: grid; place-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    .fab { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: calc(20px + env(safe-area-inset-left, 0px)); z-index: 60; width: 58px; height: 58px; border-radius: 50%; background: #25d366; display: grid; place-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
     .fab svg { width: 30px; height: 30px; fill: #fff; }
 
-    .rv { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1); }
-    .rv.in { opacity: 1; transform: none; }
+    .anim .rv { opacity: .25; transform: translateY(18px); transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1); }
+    .anim .rv.in { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
 
     @media (max-width: 900px) {
@@ -351,7 +353,8 @@
       </select>
       <textarea id="fNote" rows="2" placeholder="ספרו בקצרה על הנכס (לא חובה)"></textarea>
       <div class="err" id="fErr"></div>
-      <button class="btn btn-gold" type="submit">שלחו לי פרטים בוואטסאפ</button>
+      <button class="btn btn-gold" type="submit" id="fSubmit">המשך</button>
+      <a class="btn btn-gold" id="fSend" href="#" target="_blank" rel="noopener" hidden>✓ מוכן. לחצו לשליחה בוואטסאפ</a>
       <a class="btn btn-wa" id="waDirect" href="#" target="_blank" rel="noopener">💬 או דברו איתנו ישר בוואטסאפ</a>
     </form>
   </div>
@@ -392,11 +395,12 @@
   $("leadForm").addEventListener("submit", e => {
     e.preventDefault();
     const n = $("fName").value.trim(), p = $("fPhone").value.trim();
+    $("fSend").hidden = true; $("fSubmit").hidden = false;
     if (n.length < 2) { $("fErr").textContent = "מה השם?"; return; }
     if (!/^[\d\s\-+()]{9,}$/.test(p)) { $("fErr").textContent = "בדקו את מספר הטלפון"; return; }
     $("fErr").textContent = "";
     const msg = `היי! אשמח לשמוע על אתר קולנועי לנכס 🏡\nשם: ${n}\nטלפון: ${p}` + ($("fPlan").value ? `\nמסלול: ${$("fPlan").value}` : "") + ($("fNote").value.trim() ? `\nעל הנכס: ${$("fNote").value.trim()}` : "");
-    window.open(wa(msg), "_blank");
+    $("fSend").href = wa(msg); $("fSend").hidden = false; $("fSubmit").hidden = true;
   });
 
   // roi calc
@@ -409,7 +413,9 @@
   }
   ["price", "comm"].forEach(id => $(id).addEventListener("input", calc)); calc();
 
-  // reveal
+  // reveal (content stays visible without JS / before observers fire)
+  document.documentElement.classList.add("anim");
+  setTimeout(() => document.querySelectorAll(".rv").forEach(el => el.classList.add("in")), 2500);
   const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target); } }), { threshold: .12 });
   document.querySelectorAll(".rv").forEach(el => io.observe(el));
 
