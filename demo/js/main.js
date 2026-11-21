@@ -175,7 +175,7 @@
 
     tl.fromTo("#hero .eyebrow", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9 }, "-=0.75")
       .fromTo("#hero .hero-sub", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9 }, "-=0.55")
-      .fromTo("#hero .hero-meta", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9 }, "-=0.6")
+      .fromTo("#hero .hero-meta, #hero .hero-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9 }, "-=0.6")
       .fromTo("#hero .cue", { opacity: 0 }, { opacity: 1, duration: 1.1 }, "-=0.4");
   }
 
