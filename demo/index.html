@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0e12" />
+  <title>וילה אלמוג — סיור קולנועי</title>
+  <meta name="description" content="וילה מודרנית מול הים: גללו וטוסו לתוך הנכס. בריכת אינפיניטי, גן זיתים ונוף פתוח לים." />
+
+  <!-- Open Graph — תצוגה מקדימה בשיתוף (וואטסאפ, פייסבוק וכו'). אחרי פרסום לדומיין — לעדכן ל-URL מלא -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="וילה אלמוג — סיור קולנועי" />
+  <meta property="og:description" content="גללו וטוסו לתוך הנכס: בריכת אינפיניטי, גן זיתים ונוף פתוח לים." />
+  <meta property="og:image" content="assets/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="he_IL" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="וילה אלמוג — סיור קולנועי" />
+  <meta name="twitter:description" content="גללו וטוסו לתוך הנכס." />
+  <meta name="twitter:image" content="assets/og-image.jpg" />
+
+  <!-- Favicon מוטמע למניעת שגיאת 404 -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237fb6c9'%3E%3Cpath d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/%3E%3C/svg%3E">
+
+  <link rel="preload" as="image" href="assets/fly-poster.webp" />
+
+  <!-- Google Fonts: Heebo (משפחה אחת, שני משקלים) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/detailed.css" />
+
+  <!-- ספריות מקומיות (ללא תלות באינטרנט) -->
+  <script src="js/vendor/gsap.min.js" defer></script>
+  <script src="js/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="js/vendor/SplitText.min.js" defer></script>
+  <script src="js/vendor/lenis.min.js" defer></script>
+  <script src="../config.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+
+  <noscript>
+    <div style="position:fixed;inset:0;z-index:999;background:#f8f6f1;color:#1a1818;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:sans-serif;">
+      <p>האתר הזה הוא חוויה אינטראקטיבית הדורשת JavaScript.<br>אנא הפעילו JavaScript בדפדפן.</p>
+    </div>
+  </noscript>
+
+  <!-- מסך טעינה קולנועי -->
+  <div id="loader" class="loader">
+    <div class="loader__content">
+      <div class="loader__logo">וילה אלמוג</div>
+      <div class="loader__spinner-box">
+        <div class="loader__ring"></div>
+        <div class="loader__pct"><span id="loaderPct">0</span>%</div>
+      </div>
+      <div class="loader__txt">טוען את חוויית הסיור...</div>
+    </div>
+  </div>
+
+  <!-- תפריט עליון יוקרתי (Glassmorphic Header) -->
+  <header class="header">
+    <div class="header__logo">
+      <span class="logo__title">וילה אלמוג</span>
+      <span class="logo__separator">/</span>
+      <span class="logo__sub">SEA VILLA</span>
+    </div>
+    <nav class="header__nav">
+      <a href="#hero" class="nav-link active" data-target="hero">ראשי</a>
+      <a href="#scene-1" class="nav-link" data-target="scene-1">הטיסה</a>
+      <a href="#ds-story" class="nav-link" data-target="ds-story">הסיפור</a>
+      <a href="#ds-amenities" class="nav-link" data-target="ds-amenities">מפרט</a>
+      <a href="#ds-gallery" class="nav-link" data-target="ds-gallery">גלריה</a>
+      <a href="#outro" class="nav-link" data-target="outro">צרו קשר</a>
+    </nav>
+    <button class="hamburger" id="hamburgerBtn" aria-label="פתח תפריט">
+      <span class="hamburger__line"></span>
+      <span class="hamburger__line"></span>
+      <span class="hamburger__line"></span>
+    </button>
+  </header>
+
+  <!-- תפריט מובייל -->
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="#hero" class="mobile-nav__link" data-target="hero">ראשי</a>
+    <a href="#scene-1" class="mobile-nav__link" data-target="scene-1">הטיסה</a>
+    <a href="#ds-story" class="mobile-nav__link" data-target="ds-story">הסיפור</a>
+    <a href="#ds-amenities" class="mobile-nav__link" data-target="ds-amenities">מפרט</a>
+    <a href="#ds-gallery" class="mobile-nav__link" data-target="ds-gallery">גלריה</a>
+    <a href="#outro" class="mobile-nav__link" data-target="outro">צרו קשר</a>
+  </nav>
+
+  <!-- ניווט נקודות צידי (Side Dot Navigation) -->
+  <nav class="side-nav" aria-label="ניווט סיור">
+    <button class="side-nav__dot active" data-target="hero" aria-label="ראשי">
+      <span class="side-nav__tooltip">ראשי</span>
+    </button>
+    <button class="side-nav__dot" data-target="scene-1" aria-label="הטיסה">
+      <span class="side-nav__tooltip">הטיסה</span>
+    </button>
+    <button class="side-nav__dot" data-target="ds-story" aria-label="הסיפור">
+      <span class="side-nav__tooltip">הסיפור</span>
+    </button>
+    <button class="side-nav__dot" data-target="ds-amenities" aria-label="מפרט">
+      <span class="side-nav__tooltip">מפרט</span>
+    </button>
+    <button class="side-nav__dot" data-target="ds-gallery" aria-label="גלריה">
+      <span class="side-nav__tooltip">גלריה</span>
+    </button>
+    <button class="side-nav__dot" data-target="outro" aria-label="צרו קשר">
+      <span class="side-nav__tooltip">צרו קשר</span>
+    </button>
+  </nav>
+
+  <!-- פסי Letterbox קולנועיים -->
+  <div class="letterbox letterbox--top" aria-hidden="true"></div>
+  <div class="letterbox letterbox--bottom" aria-hidden="true"></div>
+
+  <!-- HUD סצנה (מונה קולנועי) -->
+  <div class="scene-hud" id="sceneHud" aria-hidden="true">
+    <span class="scene-hud__num" id="hudNum">01</span>
+    <span class="scene-hud__sep"></span>
+    <span class="scene-hud__total">06</span>
+    <span class="scene-hud__name" id="hudName">החוף</span>
+  </div>
+
+  <!-- מעטפת הסיור הקולנועי - החלק שנעוץ (Pinned) -->
+  <div id="cinematicWrap" class="cinematic-wrap">
+
+    <!-- וידאו ה-flythrough (רקע) — המקור נבחר ב-JS לפי גודל המסך -->
+    <div class="stage">
+      <video id="fly" class="stage__video" playsinline muted preload="auto"
+             poster="assets/fly-poster.webp"
+             data-src-desktop="assets/flythrough.mp4"
+             data-src-mobile="assets/flythrough-720.mp4">
+      </video>
+      <div class="stage__grid"></div>
+      <div class="stage__vignette"></div>
+      <div class="stage__grain"></div>
+    </div>
+
+  <!-- פס התקדמות עליון -->
+  <div class="progress"><div id="progressBar" class="progress__bar"></div></div>
+
+  <!-- תוכן גולל -->
+  <main class="scroll">
+
+    <section id="hero" class="scene scene--hero">
+      <div class="panel center">
+        <p class="eyebrow reveal">וילה מודרנית · קו ראשון לים</p>
+        <h1 class="hero-title" id="heroTitle">וילה אלמוג</h1>
+        <p class="hero-sub reveal">גללו כדי לטוס אל הבית</p>
+        <p class="hero-line reveal">קיסריה · 420 מ"ר בנוי · 1.4 דונם · בריכת אינפיניטי</p>
+        <div class="cue reveal" aria-hidden="true">
+          <div class="cue__mouse"><span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="scene-1" class="scene" data-scene="1" data-scene-name="החוף">
+      <div class="panel card card--start" data-tilt>
+        <span class="num reveal">01</span>
+        <h2 class="reveal">החוף</h2>
+        <p class="reveal">מאה מטרים של חול מפרידים בין המים לגדר. כל בוקר מתחיל בצליל של גלים.</p>
+      </div>
+    </section>
+
+    <section id="scene-2" class="scene" data-scene="2" data-scene-name="גן הזיתים">
+      <div class="panel card card--end" data-tilt>
+        <span class="num reveal">02</span>
+        <h2 class="reveal">גן הזיתים</h2>
+        <p class="reveal">שדרת אורות נמוכה חוצה מדשאה פתוחה ועצי זית בני עשרות שנים, עד המדרגות של הבית.</p>
+      </div>
+    </section>
+
+    <section id="scene-3" class="scene" data-scene="3" data-scene-name="הבריכה">
+      <div class="panel card card--start" data-tilt>
+        <span class="num reveal">03</span>
+        <h2 class="reveal">הבריכה</h2>
+        <p class="reveal">בריכת אינפיניטי של 28 מטר, שקו המים שלה נעלם אל האופק.</p>
+      </div>
+    </section>
+
+    <section id="scene-4" class="scene" data-scene="4" data-scene-name="הפרגולה">
+      <div class="panel card card--end" data-tilt>
+        <span class="num reveal">04</span>
+        <h2 class="reveal">הפרגולה</h2>
+        <p class="reveal">פינת אוכל חיצונית תחת פרגולת עץ. ארוחות שבת לעשרים איש, עם שקיעה.</p>
+      </div>
+    </section>
+
+    <section id="scene-5" class="scene" data-scene="5" data-scene-name="הכניסה">
+      <div class="panel card card--start" data-tilt>
+        <span class="num reveal">05</span>
+        <h2 class="reveal">הכניסה</h2>
+        <p class="reveal">מאחור, שדרת ברושים שומרת על פרטיות מלאה. חנייה מקורה לשלושה רכבים.</p>
+      </div>
+    </section>
+
+    <section id="scene-6" class="scene" data-scene="6" data-scene-name="הנוף">
+      <div class="panel card card--end" data-tilt>
+        <span class="num reveal">06</span>
+        <h2 class="reveal">הנוף</h2>
+        <p class="reveal">מהמרפסת של קומת השינה: הבריכה, הגן, והים. כל הדרך עד האופק.</p>
+      </div>
+    </section>
+
+
+  </main>
+  </div> <!-- סגירת cinematic-wrap -->
+
+  <!-- מפריד קינמטי -->
+  <div class="section-divider">
+    <div class="section-divider__line"></div>
+    <div class="section-divider__dot"></div>
+  </div>
+
+  <!-- אתר מפורט - זרימה טבעית מתחת לסיור -->
+  <div class="detailed-site">
+
+    <div class="ambient-glow ambient-glow--1"></div>
+    <div class="ambient-glow ambient-glow--2"></div>
+    <div class="ambient-glow ambient-glow--3"></div>
+
+    <!-- סקשן אדריכלות ומבוא -->
+    <section class="ds-section ds-intro" id="detailed-intro">
+      <div class="ds-container">
+        <div class="ds-intro__content reveal-ds">
+          <p class="eyebrow">האדריכלות</p>
+          <h2 class="ds-title reveal-ds">פתוח לים, סגור לעולם</h2>
+        <p class="ds-text reveal-ds">שני נפחים לבנים נחים זה על זה: קומת מגורים שקופה שנפתחת כולה אל הבריכה, ומעליה קומת שינה פרטית בחיפוי עץ. החזית לים כולה זכוכית, והחזית לרחוב כמעט אטומה. כך מקבלים את כל הנוף, בפרטיות מלאה.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- סקשן הסיפור — יום אחד בבית -->
+    <section class="ds-section ds-story" id="ds-story">
+      <div class="ds-container">
+        <p class="ds-eyebrow reveal-ds">הסיפור</p>
+        <h2 class="ds-title reveal-ds">יום אחד בווילה</h2>
+        <div class="story-timeline">
+          <div class="story-item reveal-ds">
+            <span class="story-item__time">07:00</span>
+            <div class="story-item__body">
+              <h3>שחייה ראשונה</h3>
+              <p>הבריכה עוד שקטה והים כחול כהה. עשר בריכות לפני הקפה, והשמש עולה מאחורי הבית.</p>
+            </div>
+          </div>
+          <div class="story-item reveal-ds">
+            <span class="story-item__time">13:00</span>
+            <div class="story-item__body">
+              <h3>צל וזיתים</h3>
+              <p>בצהריים, הסלון הפתוח והחלונות הגבוהים מכניסים את רוח הים פנימה. בחוץ, צל של עצי זית.</p>
+            </div>
+          </div>
+          <div class="story-item reveal-ds">
+            <span class="story-item__time">18:30</span>
+            <div class="story-item__body">
+              <h3>שעת הזהב</h3>
+              <p>השמש שוקעת ישר מול הבית. האור הכתום עובר דרך החזית השקופה וממלא את כל הקומה.</p>
+            </div>
+          </div>
+          <div class="story-item reveal-ds">
+            <span class="story-item__time">21:00</span>
+            <div class="story-item__body">
+              <h3>ערב תחת הפרגולה</h3>
+              <p>אורות הגן נדלקים לאורך השביל. ארוחה ארוכה תחת הפרגולה, ורעש הגלים ברקע.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- סקשן מפרט הנכס (Amenities) -->
+    <section class="ds-section ds-amenities" id="ds-amenities">
+      <div class="ds-container">
+        <h2 class="ds-title reveal-ds">מפרט הנכס</h2>
+        <div class="amenities-grid">
+          <div class="amenity-card reveal-ds">
+            <span class="amenity-val" data-count="420">0</span>
+            <span class="amenity-lbl">מ"ר בנוי</span>
+          </div>
+          <div class="amenity-card reveal-ds">
+            <span class="amenity-val" data-count="1400">0</span>
+            <span class="amenity-lbl">מ"ר מגרש</span>
+          </div>
+          <div class="amenity-card reveal-ds">
+            <span class="amenity-val" data-count="7">0</span>
+            <span class="amenity-lbl">חדרים</span>
+          </div>
+          <div class="amenity-card reveal-ds">
+            <span class="amenity-val" data-count="28">0</span>
+            <span class="amenity-lbl">מטר בריכת אינפיניטי</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- סקשן גלריית אווירה -->
+    <section class="ds-section ds-gallery" id="ds-gallery">
+      <div class="ds-container">
+        <h2 class="ds-title reveal-ds text-center">גלריה</h2>
+        <p class="text-center ds-text reveal-ds">פריימים מתוך הטיסה. לחצו על תמונה לצפייה מלאה.</p>
+        <div class="gallery-grid" id="galleryGrid">
+          <figure class="gallery-item gi-1 reveal-ds">
+            <img src="assets/gallery/gal-01.webp" alt="החזית לים: שני נפחים, קו אופק אחד" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>החזית לים</h3>
+              <p>שני נפחים, קו אופק אחד</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-2 reveal-ds">
+            <img src="assets/gallery/gal-02.webp" alt="מבט מהחוף: הבית מעל המדשאה" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>מבט מהחוף</h3>
+              <p>הבית מעל המדשאה</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-3 reveal-ds">
+            <img src="assets/gallery/gal-03.webp" alt="הבריכה: 28 מטר של מים" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>הבריכה</h3>
+              <p>28 מטר של מים</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-4 reveal-ds">
+            <img src="assets/gallery/gal-04.webp" alt="הפרגולה: פינת האוכל החיצונית" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>הפרגולה</h3>
+              <p>פינת האוכל החיצונית</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-5 reveal-ds">
+            <img src="assets/gallery/gal-05.webp" alt="שדרת האורות: השביל אל החוף" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>שדרת האורות</h3>
+              <p>השביל אל החוף</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-6 reveal-ds">
+            <img src="assets/gallery/gal-06.webp" alt="מבט מהצד: קומת השינה בחיפוי עץ" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>מבט מהצד</h3>
+              <p>קומת השינה בחיפוי עץ</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-7 reveal-ds">
+            <img src="assets/gallery/gal-07.webp" alt="גן הזיתים: מדשאה פתוחה" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>גן הזיתים</h3>
+              <p>מדשאה פתוחה</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-8 reveal-ds">
+            <img src="assets/gallery/gal-08.webp" alt="הכניסה: פרטיות מאחורי הברושים" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>הכניסה</h3>
+              <p>פרטיות מאחורי הברושים</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-9 reveal-ds">
+            <img src="assets/gallery/gal-09.webp" alt="הגג: מעל הכול" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>הגג</h3>
+              <p>מעל הכול</p>
+            </figcaption>
+          </figure>
+          <figure class="gallery-item gi-10 reveal-ds">
+            <img src="assets/gallery/gal-10.webp" alt="הנוף מהמרפסת: הבריכה, הגן והים" loading="lazy" />
+            <figcaption class="gallery-item__overlay">
+              <h3>הנוף מהמרפסת</h3>
+              <p>הבריכה, הגן והים</p>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- סקשן מאחורי הקלעים — איך נבנתה החוויה -->
+    <section class="ds-section ds-bts" id="ds-bts">
+      <div class="ds-container">
+        <p class="ds-eyebrow reveal-ds">מאחורי הקלעים</p>
+        <h2 class="ds-title reveal-ds">זה אתר לדוגמה</h2>
+        <p class="ds-text reveal-ds">וילה אלמוג היא נכס דמיוני שנבנה כהדגמה. לנכס שלכם, אנחנו לוקחים צילום רחפן אמיתי (או הדמיה של פרויקט בתכנון) והופכים אותו לחוויה כזו תוך 72 שעות.</p>
+        <div class="bts-grid">
+          <div class="bts-card reveal-ds">
+            <span class="bts-card__num">01</span>
+            <h3>הסרטון שלכם</h3>
+            <p>טיסת רחפן רציפה של 30 עד 90 שניות, או הדמיית תלת-ממד של פרויקט בתכנון. אין לכם צילום? נתאם צלם.</p>
+          </div>
+          <div class="bts-card reveal-ds">
+            <span class="bts-card__num">02</span>
+            <h3>וידאו מסונכרן לגלילה</h3>
+            <p>כל פריים בווידאו הוא keyframe, והגלילה שלכם היא הטיימליין של הסרט. קדימה, אחורה — אתם הבמאים.</p>
+          </div>
+          <div class="bts-card reveal-ds">
+            <span class="bts-card__num">03</span>
+            <h3>לידים ישר לוואטסאפ</h3>
+            <p>כל מי שמשאיר פרטים באתר נשלח ישירות לוואטסאפ של הסוכן, עם שם וטלפון. בלי מערכות ובלי דמי מנוי.</p>
+          </div>
+        </div>
+        <div class="bts-cta reveal-ds">
+          <p>רוצים אתר כזה לנכס שלכם?</p>
+          <a href="../#pricing" class="btn bts-cta__btn">למחירים ולהזמנה</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- סקשן יצירת קשר -->
+    <section class="ds-section ds-contact" id="outro">
+      <div class="ds-container ds-contact__inner reveal-ds">
+        <h2 class="ds-title text-center">הצעד הבא שלכם</h2>
+        <p class="text-center ds-text">השאירו פרטים ונתאם ביקור פרטי בנכס.</p>
+        <form class="contact-form" id="contactForm" novalidate data-whatsapp="" data-property="וילה אלמוג">
+          <input type="text" id="fieldName" placeholder="שם מלא" class="ds-input" autocomplete="name">
+          <input type="tel" id="fieldPhone" placeholder="טלפון" class="ds-input" autocomplete="tel">
+          <input type="email" id="fieldEmail" placeholder="אימייל (אופציונלי)" class="ds-input" autocomplete="email">
+          <button type="submit" class="btn ds-btn">שלח פנייה</button>
+          <div class="form-feedback" id="formFeedback"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- פוטר -->
+    <footer class="site-footer">
+      <div class="ds-container site-footer__inner">
+        <div class="site-footer__brand">
+          <span class="logo__title">וילה אלמוג</span>
+          <span class="site-footer__tag">קיסריה · קו ראשון לים</span>
+        </div>
+        <nav class="site-footer__nav" aria-label="ניווט תחתון">
+          <a href="#hero" data-target="hero">ראשי</a>
+          <a href="#scene-1" data-target="scene-1">הטיסה</a>
+          <a href="#ds-story" data-target="ds-story">הסיפור</a>
+          <a href="#ds-gallery" data-target="ds-gallery">גלריה</a>
+          <a href="#outro" data-target="outro">צרו קשר</a>
+        </nav>
+        <p class="site-footer__credit">נכס לדוגמה · נבנה ע"י <a href="../">מעוף</a> · אתרי נדל"ן קולנועיים © <span id="footerYear">2026</span></p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Lightbox לגלריה -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="תצוגת תמונה מלאה" hidden>
+    <button class="lightbox__close" id="lbClose" aria-label="סגירה">&times;</button>
+    <button class="lightbox__arrow lightbox__arrow--prev" id="lbPrev" aria-label="תמונה קודמת">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <figure class="lightbox__figure">
+      <img class="lightbox__img" id="lbImg" src="" alt="" />
+      <figcaption class="lightbox__caption" id="lbCaption"></figcaption>
+    </figure>
+    <button class="lightbox__arrow lightbox__arrow--next" id="lbNext" aria-label="תמונה הבאה">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <div class="lightbox__counter" id="lbCounter"></div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>יאללה דבר! – משחק המסיבות הישראלי</title>
+  <meta name="description" content="משחק מסיבות בעברית: מסבירים מילים בלי להגיד אותן, נגד השעון. מעל 900 מילים, אתגרים מטורפים, עובד בטלפון אחד לכל החבר'ה.">
+  <meta property="og:title" content="יאללה דבר! 🎉 משחק המסיבות הישראלי">
+  <meta property="og:description" content="מסבירים, צועקים, צוחקים. טלפון אחד – כל החבר'ה. נסו בחינם!">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="stylesheet" href="tw.css">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app" class="relative">
+
+  <!-- top bar -->
+  <div class="topbar">
+    <button class="icon-btn" onclick="openModal('modal-rules')" aria-label="חוקים">❔</button>
+    <button id="btn-premium-top" class="premium-pill" onclick="openPremium()">👑 פרימיום</button>
+    <button id="btn-home" class="icon-btn hidden" onclick="goHome()" aria-label="בית">🏠</button>
+  </div>
+
+  <!-- ===== SETUP ===== -->
+  <section id="screen-setup" class="screen max-w-md mx-auto w-full pt-16 pb-4">
+    <div class="text-center mb-5">
+      <h1 class="text-5xl font-black tracking-tight logo">יאללה<span class="text-yellow-400">דבר!</span></h1>
+      <p class="text-gray-400 text-sm mt-1">משחק המסיבות הישראלי · טלפון אחד לכל החבר'ה</p>
+    </div>
+
+    <div class="glass-panel p-5 flex-grow overflow-y-auto no-scrollbar space-y-5">
+      <div>
+        <label class="lbl">מי משחק?</label>
+        <div id="teams-container" class="space-y-2"></div>
+        <button onclick="addTeam()" class="w-full mt-2 py-3 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 text-sm font-bold hover:border-yellow-400 hover:text-yellow-400 transition">+ הוסף קבוצה</button>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-end mb-2">
+          <label class="lbl mb-0">חבילות מילים <span class="text-gray-500 normal-case">(אפשר לבחור כמה)</span></label>
+          <span id="word-count" class="text-xs text-yellow-400 font-bold"></span>
+        </div>
+        <div id="packs-grid" class="grid grid-cols-2 gap-2"></div>
+      </div>
+
+      <div>
+        <label class="lbl">מילים משלכם (בדיחות פרטיות, שמות של חברים...)</label>
+        <textarea id="custom-words" rows="2" class="w-full glass-input p-3 rounded-xl text-sm" placeholder="מופרדות בפסיק או בשורה חדשה"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="lbl">זמן לתור (שניות)</label>
+          <input type="number" id="round-time" value="60" min="10" max="300" class="w-full glass-input p-3 rounded-xl text-center font-bold text-lg"></div>
+        <div><label class="lbl">יעד לניצחון</label>
+          <input type="number" id="winning-score" value="30" min="5" max="500" class="w-full glass-input p-3 rounded-xl text-center font-bold text-lg"></div>
+      </div>
+
+      <div class="flex gap-3">
+        <label class="toggle"><span>קנס על דילוג</span><input type="checkbox" id="penalty-mode" class="w-5 h-5 accent-yellow-400"></label>
+        <label class="toggle"><span>כרטיסי אתגר</span><input type="checkbox" id="challenge-mode" checked class="w-5 h-5 accent-purple-500"></label>
+      </div>
+    </div>
+
+    <button id="btn-start" class="btn-primary w-full py-5 rounded-2xl text-xl font-black mt-4">יאללה מתחילים 🚀</button>
+  </section>
+
+  <!-- ===== TURN INTRO ===== -->
+  <section id="screen-turn" class="screen hidden justify-center items-center text-center p-4">
+    <div class="glass-panel p-10 w-full max-w-sm relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+      <h2 class="text-gray-400 text-sm tracking-widest mb-2">עכשיו תור</h2>
+      <h3 id="turn-team" class="text-5xl font-black mb-6 break-words"></h3>
+      <div class="inline-block bg-gray-800/60 px-4 py-2 rounded-lg text-sm"><span class="text-gray-400">ניקוד:</span> <b id="turn-score">0</b></div>
+      <p class="text-gray-400 text-sm mt-6">תעבירו את הטלפון למסביר 📱<br>שאר הקבוצה – תנחשו!</p>
+    </div>
+    <button id="btn-ready" class="w-full max-w-sm mt-8 bg-white text-black py-5 rounded-2xl text-2xl font-black shadow-xl">אני מוכן 🔥</button>
+  </section>
+
+  <!-- ===== GAME ===== -->
+  <section id="screen-game" class="screen hidden pt-16 pb-4 max-w-md mx-auto w-full">
+    <div class="flex justify-between items-center mb-3 px-1">
+      <div class="text-lg font-bold text-gray-400" id="game-team"></div>
+      <div class="flex items-center gap-3">
+        <div class="text-sm text-green-400 font-bold">✓ <span id="game-round-score">0</span></div>
+        <button id="btn-pause" class="w-10 h-10 bg-gray-800 rounded-full">⏸️</button>
+        <div id="timer" class="timer">60</div>
+      </div>
+    </div>
+    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mb-3"><div id="timer-bar" class="h-full bg-yellow-400 transition-all duration-1000 ease-linear" style="width:100%"></div></div>
+
+    <div class="flex-grow flex items-center justify-center py-2">
+      <div id="word-card" class="word-card">
+        <span id="card-label" class="absolute top-6 text-xs text-gray-400 tracking-widest font-bold">המילה להסביר</span>
+        <h2 id="current-word" class="text-5xl font-black text-center leading-tight px-2 break-words"></h2>
+        <div id="challenge-box" class="hidden absolute bottom-6 bg-purple-100 px-4 py-3 rounded-xl border-2 border-purple-300 w-[90%] text-center">
+          <p class="text-purple-700 text-[11px] font-bold mb-1">⭐ אתגר חובה ⭐</p>
+          <p id="challenge-text" class="text-purple-900 font-bold text-lg leading-none"></p>
+        </div>
+        <div id="paused-overlay" class="hidden absolute inset-0 bg-gray-900 rounded-[32px] flex items-center justify-center text-white text-3xl font-black">⏸️ הפסקה</div>
+      </div>
+    </div>
+
+    <div class="flex gap-4 h-28 mt-3">
+      <button id="btn-skip" class="flex-1 bg-red-500/10 border-2 border-red-500 text-red-500 rounded-2xl flex flex-col items-center justify-center active:bg-red-500 active:text-white">
+        <span class="text-3xl">✕</span><span class="font-bold text-sm">דלג</span></button>
+      <button id="btn-correct" class="flex-[1.5] bg-green-500 text-white rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-green-900/50">
+        <span class="text-4xl">✓</span><span class="font-bold text-lg">הצלחת!</span></button>
+    </div>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section id="screen-summary" class="screen hidden pt-16 pb-4 max-w-md mx-auto w-full">
+    <h2 class="text-3xl font-bold text-center mb-4">נגמר הזמן! ⏰</h2>
+    <div class="glass-panel flex-grow flex flex-col overflow-hidden">
+      <div class="bg-gray-800/50 p-5 text-center border-b border-gray-700">
+        <p class="text-gray-400 text-sm">בסיבוב הזה השגתם</p>
+        <div id="round-points" dir="ltr" class="text-6xl font-black text-green-400">+0</div>
+      </div>
+      <div class="flex-grow overflow-y-auto no-scrollbar p-4 space-y-2">
+        <div id="scoreboard" class="space-y-2"></div>
+        <details class="mt-3 text-sm"><summary class="text-gray-400 cursor-pointer">המילים של הסיבוב</summary>
+          <div id="round-words" class="flex flex-wrap gap-2 mt-2"></div></details>
+      </div>
+      <div class="p-4 bg-gray-900/50 border-t border-gray-700">
+        <div class="flex justify-between text-xs text-gray-400 mb-2"><span id="leader-text" class="font-bold text-yellow-400"></span><span id="target-text"></span></div>
+        <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden"><div id="progress-fill" class="bg-gradient-to-r from-yellow-400 to-orange-500 h-full w-0 transition-all duration-1000"></div></div>
+      </div>
+    </div>
+    <button id="btn-next" class="w-full bg-blue-600 font-bold py-4 rounded-2xl text-xl mt-4">הבא בתור ←</button>
+    <button id="btn-finish" class="w-full text-sm text-gray-500 py-2">עצור הכל וסיים משחק</button>
+  </section>
+
+  <!-- ===== VICTORY ===== -->
+  <section id="screen-victory" class="screen hidden justify-center items-center text-center p-6 max-w-md mx-auto w-full">
+    <div class="mb-6 animate-bounce text-8xl">🏆</div>
+    <h2 class="text-xl font-bold text-yellow-500 mb-2 tracking-widest">המנצחים הגדולים</h2>
+    <h1 id="winner-name" class="text-5xl font-black mb-8 break-words"></h1>
+    <div id="victory-upsell" class="hidden glass-panel p-4 mb-4 w-full text-right">
+      <p class="font-bold">נהניתם? 🔥 יש עוד 10 חבילות שמחכות לכם</p>
+      <p class="text-sm text-gray-400 mb-3">מסיבה 18+, נוסטלגיה, סרטים, משרד ועוד – מעל 700 מילים נוספות</p>
+      <button onclick="openPremium()" class="w-full btn-primary py-3 rounded-xl font-black">לפתוח את הכל 👑</button>
+    </div>
+    <button id="btn-share" class="w-full bg-[#25D366] font-bold py-4 rounded-2xl text-lg mb-3">📲 לספר לחבר'ה בוואטסאפ</button>
+    <button onclick="newGame()" class="w-full bg-gray-800 text-gray-300 font-bold py-4 rounded-2xl text-lg">משחק חדש</button>
+  </section>
+
+  <!-- ===== RULES MODAL ===== -->
+  <div id="modal-rules" class="modal hidden" onclick="if(event.target===this)closeModal('modal-rules')">
+    <div class="glass-panel modal-box">
+      <button onclick="closeModal('modal-rules')" class="modal-x">✕</button>
+      <h2 class="text-2xl font-black mb-5 text-center">איך משחקים? ⚖️</h2>
+      <ul class="space-y-3 text-gray-300 text-sm">
+        <li>🟡 מתחלקים לקבוצות. בכל תור אחד מסביר והשאר מנחשים.</li>
+        <li>🟡 מסבירים בלי להגיד את המילה, את השורש שלה או תרגום לאנגלית.</li>
+        <li>🟢 ניחוש נכון = נקודה. 🔴 דילוג = 0 (או מינוס אם הפעלתם קנס).</li>
+        <li>🟣 כרטיס סגול = אתגר חובה! מסבירים בדרך שכתובה.</li>
+        <li>⏰ כשהזמן נגמר – יש הזדמנות אחרונה למילה שעל המסך.</li>
+        <li>🏆 הקבוצה הראשונה שמגיעה ליעד – מנצחת.</li>
+      </ul>
+      <button onclick="closeModal('modal-rules')" class="w-full bg-white text-black font-bold py-3 rounded-xl mt-6">הבנתי, יאללה</button>
+    </div>
+  </div>
+
+  <!-- ===== PREMIUM MODAL ===== -->
+  <div id="modal-premium" class="modal hidden" onclick="if(event.target===this)closeModal('modal-premium')">
+    <div class="glass-panel modal-box max-h-[92dvh] overflow-y-auto no-scrollbar">
+      <button onclick="closeModal('modal-premium')" class="modal-x">✕</button>
+
+      <div id="premium-sell">
+        <div class="text-center">
+          <div class="text-5xl mb-2">👑</div>
+          <h2 class="text-2xl font-black">יאללה דבר! פרימיום</h2>
+          <p class="text-gray-400 text-sm mt-1">תשלום חד-פעמי · לתמיד · בלי מנוי</p>
+        </div>
+        <div id="premium-packs-list" class="grid grid-cols-2 gap-2 my-5 text-sm"></div>
+        <ul class="text-sm text-gray-300 space-y-1 mb-5">
+          <li>✅ <b id="premium-word-count"></b> מילים חדשות</li>
+          <li>✅ עדכונים וחבילות חדשות בחינם</li>
+          <li>✅ עובד גם בלי אינטרנט</li>
+        </ul>
+        <button id="btn-pay" class="btn-primary w-full py-4 rounded-2xl text-xl font-black">לפתוח הכל ב-₪<span class="price"></span></button>
+        <p class="text-xs text-gray-500 text-center mt-2" id="pay-hint">אחרי התשלום תקבלו קישור הפעלה בוואטסאפ</p>
+
+        <div class="h-px bg-gray-700 my-5"></div>
+        <label class="lbl">כבר שילמתם? הדביקו את קוד ההפעלה</label>
+        <div class="flex gap-2">
+          <input id="code-input" class="glass-input flex-grow p-3 rounded-xl text-sm" dir="ltr" placeholder="קוד או קישור הפעלה">
+          <button id="btn-activate" class="bg-white text-black font-bold px-4 rounded-xl">הפעל</button>
+        </div>
+        <p id="code-msg" class="text-sm mt-2 hidden"></p>
+      </div>
+
+      <div id="premium-owned" class="hidden text-center py-4">
+        <div class="text-6xl mb-3">🎉</div>
+        <h2 class="text-2xl font-black mb-2">אתם פרימיום!</h2>
+        <p class="text-gray-400 text-sm">כל החבילות פתוחות. תהנו!</p>
+      </div>
+
+      <div class="glass-panel p-4 mt-5 bg-purple-900/20">
+        <p class="font-bold">💍 חבילה מותאמת לאירוע שלכם</p>
+        <p class="text-sm text-gray-400 mb-3">חתונה, בר מצווה, יום הולדת או ערב חברה – אנחנו בונים חבילת מילים אישית עם השמות, הבדיחות והסיפורים שלכם. ₪<span id="custom-price"></span></p>
+        <button id="btn-custom" class="w-full bg-purple-600 font-bold py-3 rounded-xl">אני רוצה חבילה אישית</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<script src="js/vendor/confetti.js"></script>
+<script src="js/config.js"></script>
+<script src="js/words.js"></script>
+<script src="js/license.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
