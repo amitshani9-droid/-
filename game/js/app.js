@@ -41,7 +41,18 @@ function show(name) {
 function openModal(id) { $(id).classList.remove("hidden"); }
 function closeModal(id) { $(id).classList.add("hidden"); }
 function toast(msg, ms = 2500) { const t = $("toast"); t.textContent = msg; t.classList.remove("hidden"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add("hidden"), ms); }
-function goHome() { if (confirm("לצאת למסך הראשי? המשחק יתאפס.")) newGame(); }
+function askConfirm(text, yesLabel, onYes) {
+  $("confirm-text").textContent = text; $("confirm-yes").textContent = yesLabel;
+  $("confirm-yes").onclick = () => { closeModal("modal-confirm"); onYes(); };
+  $("confirm-no").onclick = () => closeModal("modal-confirm");
+  openModal("modal-confirm");
+}
+function goHome() {
+  if ($("screen-setup").classList.contains("hidden") === false) return;
+  const wasPaused = state.paused; if (state.playing) state.paused = true;
+  askConfirm("לצאת למסך הראשי? המשחק יתאפס.", "כן, לצאת", newGame);
+  $("confirm-no").onclick = () => { closeModal("modal-confirm"); state.paused = wasPaused; };
+}
 function newGame() { clearInterval(state.interval); state.playing = false; renderSetup(); show("setup"); }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const isUnlocked = p => p.free || License.isPremium;
@@ -204,13 +215,13 @@ $("btn-next").onclick = () => {
   if (state.teams.some(t => t.score >= state.cfg.win)) finishGame();
   else { state.cur = (state.cur + 1) % state.teams.length; prepareTurn(); }
 };
-$("btn-finish").onclick = () => { if (confirm("לסיים את המשחק עכשיו?")) finishGame(); };
+$("btn-finish").onclick = () => askConfirm("לסיים את המשחק עכשיו?", "כן, לסיים", finishGame);
 
 function finishGame() {
   const s = sortedTeams();
   $("winner-name").textContent = s.length > 1 && s[0].score === s[1].score ? "תיקו! 🤝" : s[0].name;
   $("victory-upsell").classList.toggle("hidden", License.isPremium);
-  show("victory");
+  show("victory"); setShareLink();
   const played = store.get("games_played", 0) + 1; store.set("games_played", played);
   const end = Date.now() + 3000;
   (function f() {
@@ -222,11 +233,11 @@ function finishGame() {
 }
 
 const siteUrl = () => location.origin + location.pathname.replace(/index\.html$/, "");
-$("btn-share").onclick = () => {
+function setShareLink() {
   const w = $("winner-name").textContent;
   const text = `🏆 ${w} ניצחו ב"יאללה דבר!" – משחק המסיבות הישראלי 🔥\nבואו נראה אתכם: ${siteUrl()}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-};
+  $("btn-share").href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
 
 // ---------- premium ----------
 function waLink(text) {
@@ -244,18 +255,12 @@ function openPremium() {
   $("pay-hint").textContent = CFG.PAYMENT_URL
     ? "אחרי התשלום שלחו לנו צילום מסך בוואטסאפ ותקבלו קישור הפעלה"
     : "נפתח וואטסאפ – נשלח לכם פרטי תשלום וקישור הפעלה";
+  $("btn-pay").href = CFG.PAYMENT_URL || waLink(`היי! אני רוצה לקנות את יאללה דבר! פרימיום ב-₪${CFG.PRICE} 👑`);
+  $("btn-custom").href = waLink("היי! אני רוצה חבילת מילים מותאמת אישית לאירוע 🎉\nסוג האירוע: \nתאריך: ");
   $("code-msg").classList.add("hidden");
   openModal("modal-premium");
 }
-$("btn-pay").onclick = () => {
-  if (CFG.PAYMENT_URL) {
-    window.open(CFG.PAYMENT_URL, "_blank");
-    setTimeout(() => toast("אחרי התשלום – שלחו צילום מסך בוואטסאפ 📲", 4000), 800);
-  } else {
-    window.open(waLink(`היי! אני רוצה לקנות את יאללה דבר! פרימיום ב-₪${CFG.PRICE} 👑`), "_blank");
-  }
-};
-$("btn-custom").onclick = () => window.open(waLink("היי! אני רוצה חבילת מילים מותאמת אישית לאירוע 🎉\nסוג האירוע: \nתאריך: "), "_blank");
+$("btn-pay").onclick = () => { if (CFG.PAYMENT_URL) setTimeout(() => toast("אחרי התשלום, שלחו צילום מסך בוואטסאפ 📲", 4000), 800); };
 $("btn-activate").onclick = async () => {
   const m = $("code-msg"); m.classList.remove("hidden");
   m.className = "text-sm mt-2 text-gray-400"; m.textContent = "בודק...";
