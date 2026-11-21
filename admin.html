@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ניהול מכירות</title>
+  <link rel="stylesheet" href="tw.css">
+  <link rel="stylesheet" href="style.css">
+  <style>html, body { overflow: auto; height: auto; min-height: 100dvh; } textarea, input { font-size: 14px; }</style>
+</head>
+<body>
+<div class="max-w-lg mx-auto p-4 pb-16 space-y-4">
+  <h1 class="text-3xl font-black pt-4">💰 ניהול מכירות</h1>
+  <p class="text-sm text-gray-400">הדף הזה מייצר קישורי הפעלה ללקוחות שקנו. הוא עובד רק אם הדבקת בו את המפתח הפרטי שלך – בלי המפתח אי אפשר לייצר קודים, גם אם מישהו מוצא את הדף.</p>
+
+  <!-- step 1: key -->
+  <div class="glass-panel p-4" id="key-panel">
+    <h2 class="font-bold mb-2">1. המפתח הפרטי שלך 🔑</h2>
+    <p id="key-status" class="text-sm mb-2"></p>
+    <div id="key-form">
+      <textarea id="key-input" rows="3" dir="ltr" class="w-full glass-input p-2 rounded-xl" placeholder='{"kty":"EC","crv":"P-256",...}'></textarea>
+      <div class="flex gap-2 mt-2">
+        <button id="btn-save-key" class="btn-primary px-4 py-2 rounded-xl font-bold">שמור במכשיר הזה</button>
+        <button id="btn-new-key" class="bg-gray-700 px-4 py-2 rounded-xl text-sm">צור מפתח חדש</button>
+      </div>
+    </div>
+    <button id="btn-forget" class="hidden text-xs text-red-400 mt-2">הסר מפתח מהמכשיר</button>
+    <div id="new-key-out" class="hidden mt-3 text-sm space-y-2">
+      <p class="text-yellow-400 font-bold">⚠️ נוצר מפתח חדש. עשה את 2 הדברים האלה:</p>
+      <p>א. שמור את המפתח הפרטי במקום בטוח (למשל הודעה לעצמך בוואטסאפ):</p>
+      <textarea id="new-priv" rows="3" dir="ltr" readonly class="w-full glass-input p-2 rounded-xl"></textarea>
+      <p>ב. העתק את השורה הזו לקובץ <code>js/config.js</code> במקום השורה של PUBLIC_KEY:</p>
+      <textarea id="new-pub" rows="2" dir="ltr" readonly class="w-full glass-input p-2 rounded-xl"></textarea>
+    </div>
+  </div>
+
+  <!-- step 2: generate -->
+  <div class="glass-panel p-4">
+    <h2 class="font-bold mb-2">2. לקוח שילם? צור לו קישור הפעלה 🎟️</h2>
+    <input id="buyer" class="w-full glass-input p-3 rounded-xl mb-2" placeholder="שם הלקוח (לרישום שלך)">
+    <input id="buyer-phone" class="w-full glass-input p-3 rounded-xl mb-2" dir="ltr" placeholder="טלפון הלקוח, למשל 0501234567 (לא חובה)">
+    <input id="site-url" class="w-full glass-input p-3 rounded-xl mb-2" dir="ltr" placeholder="כתובת האתר">
+    <button id="btn-gen" class="btn-primary w-full py-3 rounded-xl font-black">צור קישור הפעלה</button>
+    <div id="gen-out" class="hidden mt-3 space-y-2">
+      <textarea id="gen-link" rows="3" dir="ltr" readonly class="w-full glass-input p-2 rounded-xl"></textarea>
+      <div class="flex gap-2">
+        <button id="btn-copy" class="flex-1 bg-gray-700 py-2 rounded-xl font-bold">📋 העתק</button>
+        <a id="btn-wa" target="_blank" class="flex-1 bg-[#25D366] py-2 rounded-xl font-bold text-center">📲 שלח בוואטסאפ</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 3: log -->
+  <div class="glass-panel p-4">
+    <div class="flex justify-between items-center mb-2">
+      <h2 class="font-bold">3. מכירות שנרשמו במכשיר הזה 📈</h2>
+      <button id="btn-export" class="text-xs bg-gray-700 px-3 py-1 rounded-lg">ייצוא CSV</button>
+    </div>
+    <p id="sales-summary" class="text-sm text-yellow-400 font-bold mb-2"></p>
+    <div id="sales" class="text-sm space-y-1 max-h-72 overflow-y-auto"></div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const KEY = "yalla_admin_priv", LOG = "yalla_admin_sales";
+const enc = new TextEncoder();
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ls = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { localStorage.setItem(k, JSON.stringify(v)); } };
+
+$("site-url").value = ls.get("yalla_admin_site", location.origin + location.pathname.replace(/admin\.html$/, ""));
+
+async function loadPriv() {
+  const jwk = ls.get(KEY, null); if (!jwk) return null;
+  return crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+}
+function samePublic(jwk) { const p = APP_CONFIG.PUBLIC_KEY; return p && jwk.x === p.x && jwk.y === p.y; }
+
+function renderKey() {
+  const jwk = ls.get(KEY, null);
+  $("key-form").classList.toggle("hidden", !!jwk);
+  $("btn-forget").classList.toggle("hidden", !jwk);
+  const st = $("key-status");
+  if (!jwk) { st.className = "text-sm mb-2 text-gray-400"; st.textContent = "הדבק כאן את המפתח הפרטי (הקובץ SECRET-private-key.json)."; }
+  else if (samePublic(jwk)) { st.className = "text-sm mb-2 text-green-400"; st.textContent = "✅ המפתח שמור ותואם לאתר. אפשר לייצר קודים."; }
+  else { st.className = "text-sm mb-2 text-red-400"; st.textContent = "⚠️ המפתח שמור אבל לא תואם ל-PUBLIC_KEY שב-config.js – קודים לא יעבדו עד שתעדכן."; }
+}
+
+$("btn-save-key").onclick = async () => {
+  try {
+    const jwk = JSON.parse($("key-input").value.trim());
+    if (!jwk.d) throw 0;
+    await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+    ls.set(KEY, jwk); $("key-input").value = ""; renderKey();
+  } catch (e) { alert("המפתח לא תקין. ודא שהעתקת את כל התוכן, כולל הסוגריים המסולסלים."); }
+};
+$("btn-forget").onclick = () => { if (confirm("להסיר את המפתח מהמכשיר?")) { localStorage.removeItem(KEY); renderKey(); } };
+$("btn-new-key").onclick = async () => {
+  if (!confirm("מפתח חדש יבטל את כל הקודים שכבר נמכרו (אחרי שתעדכן את config.js). להמשיך?")) return;
+  const k = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+  const priv = await crypto.subtle.exportKey("jwk", k.privateKey), pub = await crypto.subtle.exportKey("jwk", k.publicKey);
+  ls.set(KEY, priv);
+  $("new-priv").value = JSON.stringify(priv);
+  $("new-pub").value = "PUBLIC_KEY: " + JSON.stringify({ kty: pub.kty, crv: pub.crv, x: pub.x, y: pub.y });
+  $("new-key-out").classList.remove("hidden"); renderKey();
+};
+
+$("btn-gen").onclick = async () => {
+  const key = await loadPriv();
+  if (!key) { alert("קודם שמור את המפתח הפרטי (שלב 1)"); return; }
+  const site = $("site-url").value.trim() || location.origin + "/";
+  ls.set("yalla_admin_site", site);
+  const id = b64url(crypto.getRandomValues(new Uint8Array(6)));
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, enc.encode("yalla:" + id));
+  const code = id + "." + b64url(sig);
+  const link = site + (site.includes("?") ? "&" : "?") + "unlock=" + code;
+  $("gen-link").value = link; $("gen-out").classList.remove("hidden");
+  let phone = $("buyer-phone").value.replace(/\D/g, ""); if (phone.startsWith("0")) phone = "972" + phone.slice(1);
+  const msg = `תודה שקנית את יאללה דבר! פרימיום 👑🎉\nלחץ/י על הקישור כדי לפתוח את כל החבילות:\n${link}\n\n(אם לא נפתח – העתק/י את הקישור לשדה "קוד הפעלה" במסך הפרימיום)`;
+  $("btn-wa").href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  const sales = ls.get(LOG, []);
+  sales.unshift({ id, buyer: $("buyer").value.trim(), phone: $("buyer-phone").value.trim(), date: new Date().toISOString(), price: APP_CONFIG.PRICE });
+  ls.set(LOG, sales); renderSales();
+  $("buyer").value = ""; $("buyer-phone").value = "";
+};
+$("btn-copy").onclick = () => { navigator.clipboard?.writeText($("gen-link").value); $("btn-copy").textContent = "✅ הועתק"; setTimeout(() => $("btn-copy").textContent = "📋 העתק", 1500); };
+
+function renderSales() {
+  const s = ls.get(LOG, []);
+  const total = s.reduce((a, x) => a + (parseFloat(x.price) || 0), 0);
+  $("sales-summary").textContent = s.length ? `${s.length} מכירות · ₪${total.toFixed(2)}` : "עוד אין מכירות. הראשונה בדרך 💪";
+  $("sales").innerHTML = s.map(x => `<div class="flex justify-between bg-black/20 rounded-lg px-3 py-2"><span>${esc(x.buyer || "ללא שם")} <span class="text-gray-500">${esc(x.phone || "")}</span></span><span class="text-gray-400">${new Date(x.date).toLocaleDateString("he-IL")} · ₪${esc(x.price)}</span></div>`).join("");
+}
+$("btn-export").onclick = () => {
+  const rows = [["id", "buyer", "phone", "date", "price"], ...ls.get(LOG, []).map(x => [x.id, x.buyer, x.phone, x.date, x.price])];
+  const csv = "﻿" + rows.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "sales.csv"; a.click();
+};
+renderKey(); renderSales();
+</script>
+</body>
+</html>
