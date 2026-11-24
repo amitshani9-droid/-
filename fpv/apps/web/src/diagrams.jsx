@@ -235,4 +235,50 @@ export function FlightModes() {
   );
 }
 
-export const DIAGRAMS = { WiringRx, StatorDiagram, PropDirection, Mode2, LipoScale, VideoChain, StackDiagram, PowerLead, FlightModes };
+/** Stack and motor hole patterns, drawn to scale. */
+export function MountPatterns() {
+  const sq = (x, mm, label, col) => {
+    const k = 3.2, w = mm * k;
+    return (
+      <g key={label}>
+        <rect x={x} y={110 - w / 2} width={w} height={w} rx="4" fill="rgba(255,255,255,.02)" stroke={col} strokeOpacity=".5" strokeDasharray="4 4" />
+        {[[0, 0], [w, 0], [0, w], [w, w]].map(([dx, dy], i) => <circle key={i} cx={x + dx} cy={110 - w / 2 + dy} r="4.5" fill={C.fill2} stroke={col} strokeWidth="1.5" />)}
+        <T x={x + w / 2} y={110 + w / 2 + 22} size={13} fill={col} weight={800}>{label}</T>
+      </g>
+    );
+  };
+  return (
+    <Frame title="דפוסי הרכבה" viewBox="0 0 420 210" caption="המרחק בין מרכזי החורים, בקנה מידה. הפריים קובע אילו גדלים נכנסים, ולכן בודקים אותו לפני שקונים סטאק ומנועים.">
+      {sq(18, 30.5, "30.5 מ״מ", C.accent)}
+      {sq(145, 20, "20 מ״מ", C.accent)}
+      <line x1="236" y1="30" x2="236" y2="190" stroke={C.line} />
+      {sq(262, 16, "מנוע 16×16", C.yellow)}
+      {sq(342, 12, "12×12", C.yellow)}
+      <T x={110} y={24} size={11} fill={C.muted}>סטאק</T>
+      <T x={330} y={24} size={11} fill={C.muted}>מנועים</T>
+    </Frame>
+  );
+}
+
+/** Good vs cold solder joint. */
+export function SolderJoint() {
+  return (
+    <Frame title="הלחמה טובה מול הלחמה קרה" viewBox="0 0 420 180" caption="משמאל: הלחמה טובה, חלקה ומבריקה, שעוטפת את החוט כמו הר געש קטן. מימין: הלחמה קרה, כדור אפור שלא נקשר לפד.">
+      {[[0, true], [210, false]].map(([ox, good]) => (
+        <g key={ox} transform={`translate(${ox},0)`}>
+          <rect x="30" y="118" width="150" height="16" rx="3" fill="#1f5133" />
+          <rect x="70" y="110" width="70" height="10" rx="2" fill="#c9a24a" />
+          <path d="M105 20 L105 70" stroke={good ? C.red : C.red} strokeWidth="9" strokeLinecap="round" />
+          <path d="M105 58 L105 98" stroke="#c0c6cc" strokeWidth="4" />
+          {good
+            ? <path d="M72 111 Q 105 60 138 111 Z" fill="url(#shine)" stroke="#e7ecf0" strokeOpacity=".5" />
+            : <><ellipse cx="105" cy="95" rx="22" ry="18" fill="#7d8389" /><path d="M86 90 q6 -6 12 -2 M108 100 q6 4 10 -2" stroke="#5a6066" strokeWidth="2" fill="none" /><line x1="72" y1="114" x2="138" y2="114" stroke={C.bad} strokeWidth="2" strokeDasharray="3 3" /></>}
+          <T x={105} y={160} size={13} weight={800} fill={good ? C.accent : C.bad}>{good ? "✓ טובה" : "✕ קרה"}</T>
+        </g>
+      ))}
+      <defs><linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f3f6f8" /><stop offset=".5" stopColor="#b8c0c7" /><stop offset="1" stopColor="#8a939b" /></linearGradient></defs>
+    </Frame>
+  );
+}
+
+export const DIAGRAMS = { WiringRx, StatorDiagram, PropDirection, Mode2, LipoScale, VideoChain, StackDiagram, PowerLead, FlightModes, MountPatterns, SolderJoint };

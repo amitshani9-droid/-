@@ -79,6 +79,27 @@ function useHash() {
 }
 const go = h => { location.hash = h; };
 
+// ---------- share links: #share-<mode>-<part tokens>-t-<tool tokens> (ASCII + hyphens only) ----------
+const SHARE_CATS = ["frame", "motors", "stack", "vtx", "camera", "receiver", "props", "battery", "radio", "goggles", "charger", "bnf"];
+const IDX = Object.fromEntries(PARTS.map((p, i) => [p.id, (i + 1).toString(36)]));
+export function encodeShare(mode, ids, tools) {
+  const parts = SHARE_CATS.map(c => (ids[c] && IDX[ids[c]]) || "0");
+  while (parts.length && parts[parts.length - 1] === "0") parts.pop();
+  const tl = (tools || []).map(t => IDX[t]).filter(Boolean);
+  return "share-" + (mode === "bnf" ? "n" : "b") + "-" + (parts.join("-") || "0") + (tl.length ? "-t-" + tl.join("-") : "");
+}
+export function decodeShare(h) {
+  const m = /^share-([bn])-([0-9a-z-]+)$/.exec(h);
+  if (!m) return null;
+  const [main, tl = ""] = m[2].split("-t-");
+  const byTok = t => PARTS[parseInt(t, 36) - 1];
+  const ids = {};
+  main.split("-").forEach((t, i) => { const p = t !== "0" && byTok(t); if (p && SHARE_CATS[i] === p.cat) ids[p.cat] = p.id; });
+  const tools = tl.split("-").map(byTok).filter(p => p && p.cat === "tools").map(p => p.id);
+  return { mode: m[1] === "n" ? "bnf" : "build", ids, tools };
+}
+function shareUrl(mode, ids, tools) { return location.href.split("#")[0] + "#" + encodeShare(mode, ids, tools); }
+
 function specLine(p) {
   switch (p.cat) {
     case "frame": return [`${p.size}"`, `פרופ עד ${p.maxProp}"`, `מנוע ${p.motorMount.map(m => m + "×" + m).join("/")}`, `סטאק ${p.stackMount.join("/")}`];
@@ -126,6 +147,14 @@ export default function App() {
   const t = totals(build, toolParts);
   const perf = useMemo(() => performance(build), [build]);
 
+  useEffect(() => {
+    if (!hash.startsWith("share-")) return;
+    const d = decodeShare(hash);
+    if (d && Object.keys(d.ids).length) { setIds(d.ids); setTools(d.tools); setMode(d.mode); toast("נטען בילד ששיתפו איתכם"); }
+    else toast("הקישור לא תקין", "error");
+    history.replaceState(null, "", "#build"); go("build");
+  }, [hash]);
+
   function applyPreset() {
     const { build: b, tools: tl } = presetFor(profile);
     const have = profile.have || [];
@@ -138,7 +167,7 @@ export default function App() {
     go("build");
   }
 
-  const view = hash.startsWith("lesson-") ? "lesson" : hash || "home";
+  const view = hash.startsWith("lesson-") ? "lesson" : hash.startsWith("share-") ? "build" : hash || "home";
   const ctx = { perf, hangar, setHangar, guideDone, setGuideDone, answers, setAnswers, profile, quizDone, ids, setIds, tools, setTools, mode, setMode, build, toolParts, issues, errors, t, applyPreset, done, setDone, steps, setSteps, checks, setChecks, hash };
 
   const hasBuild = Object.values(build).some(Boolean);
@@ -284,7 +313,7 @@ function Home({ quizDone, profile }) {
         {[
           ["route", "שאלון ומסלול אישי", "10 שאלות על המטרה, הניסיון והתקציב, ובסוף מסלול של 9 שלבים ובילד מומלץ."],
           ["build", "קונפיגורטור חכם", `${PARTS.length} חלקים ו-13 כללי תאימות. חלק שלא מתאים מסומן עוד לפני שבוחרים, עם הסבר למה.`],
-          ["guide", "מהרכבה ועד טיסה", "מדריך הרכבה לפי החלקים שלכם, קובץ Betaflight מוכן, שיעורים וצ'קליסט בטיחות."],
+          ["guide", "מהרכבה ועד טיסה", `מדריך הרכבה לפי החלקים שלכם, קובץ Betaflight מוכן, ${LESSONS.length} שיעורים עם תרשימים וצ'קליסט בטיחות.`],
         ].map(([icon, h, p]) => (
           <div key={h} className="border border-line bg-panel p-5">
             <span className="w-9 h-9 grid place-items-center rounded-[10px] bg-neon-soft text-neon"><Icon name={icon} className="w-[18px] h-[18px]" /></span>
@@ -527,6 +556,7 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
                 <a href="#guide" className="nav-item"><Icon name="guide" className="w-[18px] h-[18px]" />מדריך הרכבה</a>
                 <a href="#betaflight" className="nav-item"><Icon name="betaflight" className="w-[18px] h-[18px]" />קובץ Betaflight</a>
                 <SaveToHangar ids={ids} tools={tools} mode={mode} hangar={hangar} setHangar={setHangar} build={build} variant="row" />
+                <ShareButton mode={mode} ids={ids} tools={tools} variant="row" />
               </div>
             )}
           </div>
@@ -535,10 +565,11 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
 
       {/* phone: actions + sticky bar */}
       {!empty && (
-        <div className="lg:hidden grid grid-cols-3 gap-2 mt-5">
-          <a href="#guide" className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name="guide" className="w-5 h-5 mx-auto text-neon mb-1" />מדריך הרכבה</a>
+        <div className="lg:hidden grid grid-cols-4 gap-2 mt-5">
+          <a href="#guide" className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name="guide" className="w-5 h-5 mx-auto text-neon mb-1" />הרכבה</a>
           <a href="#betaflight" className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name="betaflight" className="w-5 h-5 mx-auto text-neon mb-1" />Betaflight</a>
           <SaveToHangar ids={ids} tools={tools} mode={mode} hangar={hangar} setHangar={setHangar} build={build} />
+          <ShareButton mode={mode} ids={ids} tools={tools} variant="tile" />
         </div>
       )}
       {!empty && (
@@ -639,7 +670,7 @@ function Picker({ cat, build, current, onPick, onClose }) {
 }
 
 // ---------- cart ----------
-function Cart({ build, toolParts, errors, t, mode }) {
+function Cart({ build, toolParts, errors, t, mode, ids, tools }) {
   const [copied, setCopied] = useState(false);
   const cats = mode === "bnf" ? BNF_CATS : BUILD_CATS;
   const items = cats.map(c => build[c]).filter(Boolean).concat(toolParts);
@@ -685,7 +716,8 @@ function Cart({ build, toolParts, errors, t, mode }) {
       )}
       <div className="flex flex-wrap gap-2 mt-5">
         <button onClick={copy} className="btn btn-ghost"><Icon name={copied ? "check" : "copy"} className="w-4 h-4" />{copied ? "הועתק" : "העתקת הרשימה"}</button>
-        <a className="btn btn-ghost" target="_blank" rel="noopener" href={`https://wa.me/?text=${encodeURIComponent("הבילד שלי ב-" + CONFIG.BRAND + ":\n" + text)}`}>שלח בוואטסאפ</a>
+        <ShareButton mode={mode} ids={ids} tools={tools} />
+        <a className="btn btn-ghost" target="_blank" rel="noopener" href={`https://wa.me/?text=${encodeURIComponent("הבילד שלי ב-" + CONFIG.BRAND + ":\n" + text + "\n\nלפתוח ולבדוק תאימות: " + shareUrl(mode, ids, tools))}`}><Icon name="chat" className="w-4 h-4" />שליחה בוואטסאפ</a>
       </div>
       <textarea id="cart-text" hidden readOnly value={text} className="w-full mt-3 bg-panel border border-line p-3 text-sm h-40" />
       <p className="text-xs text-muted mt-5 leading-relaxed">המחירים משוערים ומשתנים בין חנויות. קישורי הקנייה הם קישורי שותפים: אם תקנה דרכם, נקבל עמלה קטנה בלי שהמחיר שלך ישתנה. העמלה לא משפיעה על בדיקות התאימות ולא על סדר ההמלצות.</p>
@@ -700,7 +732,7 @@ function Learn({ done }) {
   const nextUp = LESSONS.find(l => !done[l.id]);
   return (
     <div className="rise">
-      <PageHeader eyebrow="יחידות 1–2 מתוך הסילבוס" title="שיעורי יסוד" desc="6 שיעורים קצרים, כל אחד עם תרשים ושאלת בדיקה. מסיימים את כולם ויודעים מה כל חלק עושה ואיך טסים בבטחה." />
+      <PageHeader eyebrow={`${units.length} יחידות · ${LESSONS.length} שיעורים · כ-${LESSONS.reduce((a, l) => a + l.min, 0)} דקות`} title="הסילבוס" desc="מהיסודות ועד צילום סינמטי. שיעורים קצרים עם תרשימים ושאלת בדיקה בסוף כל אחד." />
       <div className="hud p-5 flex items-center gap-5 flex-wrap">
         <div className="relative w-16 h-16 shrink-0">
           <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--panel2)" strokeWidth="3.5" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--neon)" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${n / LESSONS.length * 97.4} 97.4`} /></svg>
@@ -1028,4 +1060,16 @@ function Tutor({ build, issues, view }) {
       )}
     </>
   );
+}
+
+// ---------- share ----------
+function ShareButton({ mode, ids, tools, variant }) {
+  async function share() {
+    const url = shareUrl(mode, ids, tools);
+    try { await navigator.clipboard.writeText(url); toast("הקישור לבילד הועתק"); }
+    catch { toast("לא הצלחנו להעתיק את הקישור בדפדפן הזה", "error"); }
+  }
+  if (variant === "row") return <button onClick={share} className="nav-item w-full"><Icon name="send" className="w-[18px] h-[18px]" />שיתוף הבילד</button>;
+  if (variant === "tile") return <button onClick={share} className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name="send" className="w-5 h-5 mx-auto text-neon mb-1" />שיתוף</button>;
+  return <button onClick={share} className="btn btn-ghost"><Icon name="send" className="w-4 h-4" />העתקת קישור לבילד</button>;
 }
