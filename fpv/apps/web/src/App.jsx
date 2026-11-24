@@ -91,22 +91,26 @@ export default function App() {
   const view = hash.startsWith("lesson-") ? "lesson" : hash || "home";
   const ctx = { perf, hangar, setHangar, guideDone, setGuideDone, answers, setAnswers, profile, quizDone, ids, setIds, tools, setTools, mode, setMode, build, toolParts, issues, errors, t, applyPreset, done, setDone, steps, setSteps, checks, setChecks, hash };
 
+  const hasBuild = Object.values(build).some(Boolean);
   return (
-    <div className="min-h-full flex flex-col">
-      <TopBar t={t} errors={errors.length} view={view} hasBuild={Object.values(build).some(Boolean)} />
-      <main className="flex-1 w-full max-w-3xl mx-auto gutter pb-28 pt-4">
-        {view === "home" && <Home {...ctx} />}
-        {view === "quiz" && <Quiz {...ctx} />}
-        {view === "route" && <Route {...ctx} />}
-        {view === "build" && <Builder {...ctx} />}
-        {view === "cart" && <Cart {...ctx} />}
-        {view === "learn" && <Learn {...ctx} />}
-        {view === "lesson" && <Lesson {...ctx} />}
-        {view === "safety" && <Safety {...ctx} />}
-        {view === "guide" && <Guide {...ctx} />}
-        {view === "betaflight" && <BetaflightView {...ctx} />}
-        {view === "hangar" && <Hangar {...ctx} />}
-      </main>
+    <div className="min-h-full">
+      <Sidebar view={view} t={t} errors={errors.length} hasBuild={hasBuild} quizDone={quizDone} hangarCount={hangar.length} />
+      <div className="md:mr-64 min-h-full flex flex-col">
+        <TopBar t={t} errors={errors.length} view={view} hasBuild={hasBuild} />
+        <main className="flex-1 w-full max-w-5xl mx-auto gutter md:px-10 pb-28 md:pb-16 pt-5 md:pt-10">
+          {view === "home" && <Home {...ctx} />}
+          {view === "quiz" && <Quiz {...ctx} />}
+          {view === "route" && <Route {...ctx} />}
+          {view === "build" && <Builder {...ctx} />}
+          {view === "cart" && <Cart {...ctx} />}
+          {view === "learn" && <Learn {...ctx} />}
+          {view === "lesson" && <Lesson {...ctx} />}
+          {view === "safety" && <Safety {...ctx} />}
+          {view === "guide" && <Guide {...ctx} />}
+          {view === "betaflight" && <BetaflightView {...ctx} />}
+          {view === "hangar" && <Hangar {...ctx} />}
+        </main>
+      </div>
       <BottomNav view={view} />
       {["build", "guide", "betaflight", "lesson", "learn", "route", "cart"].includes(view) && <Tutor build={build} issues={issues} view={view} />}
     </div>
@@ -114,19 +118,65 @@ export default function App() {
 }
 
 // ---------- chrome ----------
+const NAV = [["route", "המסלול שלי", "route"], ["build", "קונפיגורטור", "build"], ["hangar", "האנגר", "hangar"], ["learn", "שיעורים", "learn"], ["safety", "בטיחות", "safety"]];
+const isActive = (view, v) => view === v || (v === "learn" && view === "lesson") || (v === "build" && ["cart", "guide", "betaflight"].includes(view)) || (v === "route" && view === "quiz");
+
+function Logo() {
+  return (
+    <a href="#" className="flex items-center gap-2.5" aria-label={CONFIG.BRAND + " Builder, דף הבית"}>
+      <span className="w-8 h-8 rounded-[9px] grid place-items-center" style={{ background: "linear-gradient(135deg,#2dd4bf,#0f766e)" }}>
+        <svg viewBox="0 0 24 24" className="w-[20px] h-[20px]" fill="none" stroke="#032420" strokeWidth="1.8"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9" strokeWidth="2.2" /><circle cx="6" cy="6" r="3.2" /><circle cx="18" cy="6" r="3.2" /><circle cx="6" cy="18" r="3.2" /><circle cx="18" cy="18" r="3.2" /><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="1.2" fill="#032420" stroke="none" /></svg>
+      </span>
+      <span className="font-extrabold text-[17px] tracking-tight">{CONFIG.BRAND}<span className="text-muted font-medium"> Builder</span></span>
+    </a>
+  );
+}
+
+function StatusPill({ errors }) {
+  return <span className={`inline-flex items-center gap-1 text-xs font-medium ${errors ? "text-bad" : "text-neon"}`}><Icon name={errors ? "warn" : "ok"} className="w-3.5 h-3.5" />{errors ? `${errors} שגיאות` : "תואם"}</span>;
+}
+
+function Sidebar({ view, t, errors, hasBuild, quizDone, hangarCount }) {
+  return (
+    <aside className="hidden md:flex fixed inset-y-0 right-0 w-64 flex-col border-l border-line px-4 py-6" style={{ background: "#0e1115" }}>
+      <div className="px-2"><Logo /></div>
+      <nav className="mt-8 space-y-1" aria-label="ניווט ראשי">
+        {NAV.map(([v, label, icon]) => (
+          <a key={v} href={"#" + v} className="nav-item" aria-current={isActive(view, v) ? "page" : undefined}>
+            <Icon name={icon} className="w-[18px] h-[18px]" />{label}
+            {v === "hangar" && hangarCount > 0 && <span className="mr-auto text-[11px] text-muted bg-panel2 px-1.5 py-0.5 rounded-md">{hangarCount}</span>}
+          </a>
+        ))}
+      </nav>
+      <div className="mt-auto">
+        {hasBuild ? (
+          <a href="#build" className="block border border-line bg-panel p-4 card-hover">
+            <div className="text-xs text-muted">הבילד הנוכחי</div>
+            <div className="text-xl font-bold osd mt-1">{ils(t.price)}</div>
+            <div className="flex items-center justify-between mt-1"><span className="text-xs text-muted osd">{t.auw}g</span><StatusPill errors={errors} /></div>
+          </a>
+        ) : !quizDone && (
+          <a href="#quiz" className="block border border-line bg-panel p-4 card-hover">
+            <div className="font-semibold text-sm">לא יודעים מאיפה להתחיל?</div>
+            <div className="text-xs text-muted mt-1">שאלון של 2 דקות בונה לכם מסלול ובילד.</div>
+            <div className="text-neon text-sm font-semibold mt-2">להתחיל ←</div>
+          </a>
+        )}
+        <p className="text-[11px] text-muted mt-4 px-1">חינמי · בעברית · גרסה 0.2</p>
+      </div>
+    </aside>
+  );
+}
+
 function TopBar({ t, errors, view, hasBuild }) {
   return (
-    <header className="sticky z-40 border-b border-line bg-ink/90 backdrop-blur" style={{ top: "env(safe-area-inset-top, 0px)", background: "rgba(7,9,11,.88)" }}>
-      <div className="max-w-3xl mx-auto gutter h-14 flex items-center justify-between gap-3">
-        <a href="#" className="flex items-center gap-2 font-black text-lg">
-          <span className="w-7 h-7 grid place-items-center border border-line text-neon osd text-xs">G4</span>
-          <span>{CONFIG.BRAND}<span className="text-neon"> Builder</span></span>
-        </a>
+    <header className="md:hidden sticky z-40 border-b border-line" style={{ top: "env(safe-area-inset-top, 0px)", background: "rgba(11,13,16,.9)", backdropFilter: "blur(12px)" }}>
+      <div className="gutter h-14 flex items-center justify-between gap-3">
+        <Logo />
         {hasBuild && view !== "home" && (
-          <a href="#build" className="osd text-xs flex items-center gap-3 text-muted">
-            <span className="text-fg">{ils(t.price)}</span>
-            <span>{t.auw}g</span>
-            <span className={errors ? "text-bad" : "text-neon"}>{errors ? `${errors} ERR` : "OK"}</span>
+          <a href="#build" className="flex items-center gap-2.5 text-xs">
+            <span className="osd font-semibold">{ils(t.price)}</span>
+            <StatusPill errors={errors} />
           </a>
         )}
       </div>
@@ -135,16 +185,18 @@ function TopBar({ t, errors, view, hasBuild }) {
 }
 
 function BottomNav({ view }) {
-  const items = [["route", "המסלול", "bnf"], ["build", "קונפיגורטור", "stack"], ["learn", "שיעורים", "camera"], ["safety", "בטיחות", "battery"]];
-  const active = v => view === v || (v === "learn" && view === "lesson") || (v === "build" && ["cart", "guide", "betaflight", "hangar"].includes(view)) || (v === "route" && view === "quiz");
+  const items = NAV.filter(([v]) => v !== "hangar");
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-line" style={{ background: "rgba(7,9,11,.94)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }} aria-label="ניווט ראשי">
-      <div className="max-w-3xl mx-auto grid grid-cols-4 gutter">
-        {items.map(([v, label, icon]) => (
-          <a key={v} href={"#" + v} className={`flex flex-col items-center gap-1 py-2.5 text-[12px] ${active(v) ? "text-neon" : "text-muted"}`} aria-current={active(v) ? "page" : undefined}>
-            <Icon name={icon} />{label}
-          </a>
-        ))}
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-line" style={{ background: "rgba(11,13,16,.95)", backdropFilter: "blur(12px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }} aria-label="ניווט ראשי">
+      <div className="grid grid-cols-4 gutter">
+        {items.map(([v, label, icon]) => {
+          const on = isActive(view, v);
+          return (
+            <a key={v} href={"#" + v} className={`flex flex-col items-center gap-1 pt-2 pb-2.5 text-[11.5px] font-medium ${on ? "text-fg" : "text-muted"}`} aria-current={on ? "page" : undefined}>
+              <span className={`px-4 py-1 rounded-full ${on ? "bg-neon-soft text-neon" : ""}`}><Icon name={icon} className="w-[19px] h-[19px]" /></span>{label.replace(" שלי", "")}
+            </a>
+          );
+        })}
       </div>
     </nav>
   );
@@ -154,38 +206,43 @@ function BottomNav({ view }) {
 function Home({ quizDone, profile }) {
   return (
     <div className="rise">
-      <section className="hud scan overflow-hidden px-5 pt-6 pb-7 mt-2">
-        <div className="osd text-[11px] text-neon flex justify-between mb-4"><span>● REC 00:00</span><span>25.2V · 6S</span></div>
-        <div className="grid md:grid-cols-[1fr_260px] gap-4 items-center">
+      <section className="hud hero-glow overflow-hidden">
+        <div className="grid lg:grid-cols-[1.15fr_1fr] gap-6 items-center p-6 md:p-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black leading-[1.05] tracking-tight">מאפס מוחלט<br />ועד <span className="text-neon">טיסה ראשונה</span>.</h1>
-            <p className="text-muted mt-4 max-w-md leading-relaxed">שאלון של 2 דקות, מסלול אישי לפי המטרה והתקציב שלך, קונפיגורטור שבודק שכל חלק מתאים לשאר, ושיעורים קצרים בעברית. בלי לזרוק כסף על חלקים שלא מתאימים.</p>
-            <div className="flex flex-wrap gap-3 mt-6">
+            <span className="eyebrow">ללמוד, לבנות ולטוס FPV · בעברית</span>
+            <h1 className="text-[2.35rem] md:text-[3.25rem] font-extrabold leading-[1.06] mt-3">מאפס מוחלט<br />ועד <span className="text-neon">טיסה ראשונה</span>.</h1>
+            <p className="text-[#b4bcc7] mt-4 max-w-md leading-relaxed text-[16.5px]">מסלול אישי לפי המטרה והתקציב שלכם, קונפיגורטור שבודק שכל חלק מתאים לשאר, ושיעורים קצרים. בלי לזרוק כסף על חלקים שלא מתאימים.</p>
+            <div className="flex flex-wrap gap-3 mt-7">
               {quizDone
-                ? <><a href="#route" className="btn btn-neon">להמשיך במסלול שלי ←</a><a href="#quiz" className="btn btn-ghost">לענות מחדש</a></>
-                : <a href="#quiz" className="btn btn-neon">להתחיל את השאלון ←</a>}
+                ? <><a href="#route" className="btn btn-neon">להמשיך במסלול שלי<Icon name="back" className="w-4 h-4" /></a><a href="#quiz" className="btn btn-ghost">לענות מחדש</a></>
+                : <a href="#quiz" className="btn btn-neon">להתחיל: שאלון של 2 דקות<Icon name="back" className="w-4 h-4" /></a>}
               <a href="#build" className="btn btn-ghost">ישר לקונפיגורטור</a>
             </div>
-            {quizDone && <p className="osd text-xs text-muted mt-4">הפרופיל שלך: <span className="text-fg">{profile.classInfo.label}</span> · {profile.video === "digital" ? "דיגיטלי" : "אנלוגי"} · {profile.path === "bnf" ? "מוכן לטיסה" : "בנייה עצמית"}</p>}
+            {quizDone && <p className="text-sm text-muted mt-5">הפרופיל שלכם: <span className="text-fg font-medium">{profile.classInfo.label}</span> · {profile.video === "digital" ? "דיגיטלי" : "אנלוגי"} · {profile.path === "bnf" ? "מוכן לטיסה" : "בנייה עצמית"}</p>}
           </div>
-          <Drone className="w-56 md:w-full mx-auto" glow />
+          <div className="relative mx-auto w-full max-w-[340px]">
+            <Drone className="w-full" />
+            <div className="absolute top-3 left-0 w-max hud px-3 py-2 text-xs flex items-center gap-2"><Icon name="ok" className="w-4 h-4 text-neon" /><span><b className="osd">13/13</b> בדיקות תאימות</span></div>
+            <div className="absolute bottom-10 right-0 w-max hud px-3 py-2 text-xs"><div className="text-muted">זמן טיסה משוער</div><div className="osd font-bold text-base" dir="ltr" style={{ textAlign: "right" }}>4.5–6.5 min</div></div>
+            <div className="absolute bottom-0 left-2 w-max hud px-3 py-2 text-xs"><div className="text-muted">דחף-משקל</div><div className="osd font-bold text-base" dir="ltr" style={{ textAlign: "right" }}>11.9 : 1</div></div>
+          </div>
         </div>
       </section>
 
       <section className="grid sm:grid-cols-3 gap-3 mt-4">
         {[
-          ["01", "שאלון חכם", "10 שאלות על המטרה, הניסיון והתקציב. בסוף תקבל מסלול ובילד מומלץ."],
-          ["02", "קונפיגורטור", `${PARTS.length} חלקים, 13 כללי תאימות. כל חלק שלא מתאים מסומן בשורה שמסבירה למה.`],
-          ["03", "שיעורים + בטיחות", "6 שיעורי יסוד של 3–4 דקות, וצ'קליסט שחייב לעבור לפני הטיסה הראשונה."],
-        ].map(([n, h, p]) => (
-          <div key={n} className="border border-line bg-panel p-4">
-            <div className="osd text-neon text-xs">{n}</div>
-            <h3 className="font-bold mt-1">{h}</h3>
-            <p className="text-sm text-muted mt-1 leading-relaxed">{p}</p>
+          ["route", "שאלון ומסלול אישי", "10 שאלות על המטרה, הניסיון והתקציב, ובסוף מסלול של 9 שלבים ובילד מומלץ."],
+          ["build", "קונפיגורטור חכם", `${PARTS.length} חלקים ו-13 כללי תאימות. חלק שלא מתאים מסומן עוד לפני שבוחרים, עם הסבר למה.`],
+          ["guide", "מהרכבה ועד טיסה", "מדריך הרכבה לפי החלקים שלכם, קובץ Betaflight מוכן, שיעורים וצ'קליסט בטיחות."],
+        ].map(([icon, h, p]) => (
+          <div key={h} className="border border-line bg-panel p-5">
+            <span className="w-9 h-9 grid place-items-center rounded-[10px] bg-neon-soft text-neon"><Icon name={icon} className="w-[18px] h-[18px]" /></span>
+            <h3 className="font-bold mt-3">{h}</h3>
+            <p className="text-sm text-muted mt-1.5 leading-relaxed">{p}</p>
           </div>
         ))}
       </section>
-      <p className="text-xs text-muted mt-6 leading-relaxed">המוצר חינמי. חלק מקישורי הקנייה הם קישורי שותפים: אם תקנה דרכם, נקבל עמלה קטנה. זה לא משנה את המחיר שלך, ולא את בדיקות התאימות או את סדר ההמלצות.</p>
+      <p className="text-xs text-muted mt-6 leading-relaxed max-w-2xl">המוצר חינמי. חלק מקישורי הקנייה הם קישורי שותפים: אם תקנו דרכם נקבל עמלה קטנה, בלי שהמחיר שלכם ישתנה. העמלה לא משפיעה על בדיקות התאימות ולא על סדר ההמלצות.</p>
     </div>
   );
 }
@@ -316,89 +373,125 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
     setPicker(null);
   }
 
+  const compat = (
+    <section>
+      <div className="flex items-center justify-between mb-2.5">
+        <h2 className="font-bold text-lg">בדיקת תאימות</h2>
+        {!empty && <span className="text-xs text-muted osd">{oks.length} עברו · {warns.length} אזהרות · {errors.length} שגיאות</span>}
+      </div>
+      {empty ? <p className="text-sm text-muted">בחרו חלקים, והבדיקה תתעדכן כאן בזמן אמת.</p> : (
+        <div className="space-y-2">
+          {errors.map((e, k) => <IssueRow key={"e" + k} i={e} />)}
+          {warns.map((e, k) => <IssueRow key={"w" + k} i={e} />)}
+          {!errors.length && !warns.length && <div className="border lv-ok p-3.5 text-sm font-medium flex items-center gap-2"><Icon name="ok" className="w-4 h-4" />הכול מתאים. אפשר לעבור לרשימת הקניות.</div>}
+          {oks.length > 0 && (
+            <details className="text-sm"><summary className="cursor-pointer text-muted text-xs py-1.5">הצג את {oks.length} הבדיקות שעברו</summary>
+              <div className="flex flex-wrap gap-1.5 mt-2">{oks.map((o, k) => <Level key={k} level="ok">{o.title}: {o.msg}</Level>)}</div>
+            </details>
+          )}
+        </div>
+      )}
+    </section>
+  );
+
   return (
     <div className="rise">
-      <div className="flex items-end justify-between gap-3 flex-wrap">
+      <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black">קונפיגורטור</h1>
-          <p className="text-sm text-muted">בחר חלק לכל מקום. כל בחירה נבדקת מול שאר הבילד. <a href="#hangar" className="text-neon underline">האנגר שלי{hangar.length ? ` (${hangar.length})` : ""}</a></p>
+          <span className="eyebrow">{mode === "bnf" ? "רחפן מוכן + ציוד" : "בנייה עצמית"}</span>
+          <h1 className="text-[1.75rem] font-extrabold mt-1">קונפיגורטור</h1>
+          <p className="text-sm text-muted mt-1">בחרו חלק לכל מקום. כל בחירה נבדקת מול שאר הבילד בזמן אמת.</p>
         </div>
-        <div className="flex border border-line osd text-xs" role="tablist">
+        <div className="flex p-1 bg-panel border border-line text-sm" role="tablist" aria-label="סוג בילד">
           {[["build", "בנייה"], ["bnf", "מוכן (BNF)"]].map(([m, l]) => (
-            <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`px-3 py-2 ${mode === m ? "bg-neon text-ink" : "text-muted"}`}>{l}</button>
+            <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`px-4 py-1.5 rounded-[9px] font-medium transition ${mode === m ? "bg-panel2 text-fg shadow" : "text-muted hover:text-fg"}`} style={mode === m ? { boxShadow: "0 0 0 1px var(--line2)" } : undefined}>{l}</button>
           ))}
         </div>
       </div>
 
       {empty && (
-        <div className="hud p-4 mt-4 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm">{quizDone ? "יש לך פרופיל. רוצה להתחיל מהבילד שהמלצנו?" : "לא בטוח מאיפה להתחיל? השאלון בונה לך בילד מומלץ."}</p>
+        <div className="hud p-5 mt-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 grid place-items-center rounded-[10px] bg-neon-soft text-neon"><Icon name="tutor" /></span>
+            <p className="text-sm">{quizDone ? "יש לכם פרופיל. להתחיל מהבילד שהמלצנו?" : "לא בטוחים מאיפה להתחיל? השאלון בונה לכם בילד מומלץ."}</p>
+          </div>
           {quizDone ? <button className="btn btn-neon" onClick={applyPreset}>לטעון בילד מומלץ</button> : <a className="btn btn-neon" href="#quiz">לשאלון</a>}
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-2.5 mt-4">
-        {cats.map(c => {
-          const p = build[c];
-          const bad = errors.some(e => e.cats.includes(c));
-          const needed = missing.includes(c);
-          return (
-            <button key={c} onClick={() => setPicker(c)} onAnimationEnd={() => setShakeId(null)}
-              className={`text-right border bg-panel p-3.5 flex gap-3 items-start transition hover:border-muted ${bad ? "bd-error" : p ? "border-line" : "border-dashed border-line"} ${shakeId === c ? "shake" : ""}`}>
-              <span className={`mt-0.5 ${bad ? "text-bad" : p ? "text-neon" : "text-muted"}`}><Icon name={CATEGORIES[c].icon} /></span>
-              <span className="min-w-0 flex-1">
-                <span className="flex justify-between gap-2 text-xs text-muted"><span>{CATEGORIES[c].label}</span>{p && <span className="osd">{ils(p.price)}</span>}</span>
-                {p ? <>
-                  <span className="block font-bold leading-snug mt-0.5">{title(p)}</span>
-                  <span className="flex flex-wrap gap-1 mt-1.5">{specLine(p).map(s => <span key={s} className="chip">{s}</span>)}</span>
-                </> : <span className={`block mt-0.5 ${needed ? "text-fg" : "text-muted"}`}>+ בחר {needed ? "" : "(לא חובה)"}</span>}
-              </span>
-            </button>
-          );
-        })}
-        <ToolsSlot tools={tools} setTools={setTools} />
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-6 mt-5">
+        <div className="min-w-0 space-y-6">
+          <div className="grid sm:grid-cols-2 gap-2.5">
+            {cats.map(c => {
+              const p = build[c];
+              const bad = errors.some(e => e.cats.includes(c));
+              const needed = missing.includes(c);
+              return (
+                <button key={c} onClick={() => setPicker(c)} onAnimationEnd={() => setShakeId(null)}
+                  className={`text-right border bg-panel p-4 flex gap-3 items-start card-hover ${bad ? "bd-error" : p ? "border-line" : "border-dashed border-line"} ${shakeId === c ? "shake" : ""}`}>
+                  <span className={`shrink-0 w-9 h-9 grid place-items-center rounded-[10px] ${bad ? "lv-error" : p ? "bg-neon-soft text-neon" : "bg-panel2 text-muted"}`}><Icon name={CATEGORIES[c].icon} className="w-[18px] h-[18px]" /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex justify-between gap-2 text-xs text-muted"><span>{CATEGORIES[c].label}</span>{p && <span className="osd text-fg font-medium">{ils(p.price)}</span>}</span>
+                    {p ? <>
+                      <span className="block font-semibold leading-snug mt-0.5"><bdi>{title(p)}</bdi></span>
+                      <span className="flex flex-wrap gap-1 mt-2">{specLine(p).map(s => <span key={s} className="chip"><bdi>{s}</bdi></span>)}</span>
+                    </> : <span className={`flex items-center gap-1 mt-1 text-sm ${needed ? "text-fg" : "text-muted"}`}><Icon name="plus" className="w-4 h-4" />בחירה{needed ? "" : " (לא חובה)"}</span>}
+                  </span>
+                </button>
+              );
+            })}
+            <ToolsSlot tools={tools} setTools={setTools} />
+          </div>
+          {perf && <PerfPanel perf={perf} />}
+          {compat}
+        </div>
+
+        {/* desktop summary */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-8 space-y-3">
+            <div className="hud p-5">
+              <div className="text-xs text-muted">סה"כ משוער</div>
+              <div className="text-[2rem] font-extrabold osd leading-tight mt-0.5">{ils(t.price)}</div>
+              <div className="flex items-center justify-between mt-2 text-sm"><span className="text-muted osd">{t.auw}g משקל המראה</span><StatusPill errors={errors.length} /></div>
+              {perf && <div className="grid grid-cols-2 gap-2 mt-4">
+                <div className="bg-panel2 rounded-[10px] p-2.5"><div className="text-[11px] text-muted">זמן טיסה</div><div className="osd font-bold" dir="ltr" style={{ textAlign: "right" }}>{perf.flightMin[0]}–{perf.flightMin[1]}′</div></div>
+                <div className="bg-panel2 rounded-[10px] p-2.5"><div className="text-[11px] text-muted">דחף-משקל</div><div className="osd font-bold" dir="ltr" style={{ textAlign: "right" }}>{perf.twr}:1</div></div>
+              </div>}
+              <a href="#cart" className={`btn btn-neon w-full mt-4 ${empty ? "pointer-events-none opacity-40" : ""}`}><Icon name="cart" className="w-4 h-4" />רשימת קניות</a>
+            </div>
+            {!empty && (
+              <div className="hud p-2">
+                <a href="#guide" className="nav-item"><Icon name="guide" className="w-[18px] h-[18px]" />מדריך הרכבה</a>
+                <a href="#betaflight" className="nav-item"><Icon name="betaflight" className="w-[18px] h-[18px]" />קובץ Betaflight</a>
+                <SaveToHangar ids={ids} tools={tools} mode={mode} hangar={hangar} setHangar={setHangar} build={build} variant="row" />
+              </div>
+            )}
+          </div>
+        </aside>
       </div>
 
-      {perf && <PerfPanel perf={perf} />}
+      {/* phone: actions + sticky bar */}
       {!empty && (
-        <div className="grid grid-cols-3 gap-2 mt-4">
-          <a href="#guide" className="border border-line bg-panel p-3 text-center text-sm hover:border-muted"><span className="block text-neon mb-1"><Icon name="tools" className="w-5 h-5 mx-auto" /></span>מדריך הרכבה</a>
-          <a href="#betaflight" className="border border-line bg-panel p-3 text-center text-sm hover:border-muted"><span className="block text-neon mb-1"><Icon name="stack" className="w-5 h-5 mx-auto" /></span>Betaflight CLI</a>
+        <div className="lg:hidden grid grid-cols-3 gap-2 mt-5">
+          <a href="#guide" className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name="guide" className="w-5 h-5 mx-auto text-neon mb-1" />מדריך הרכבה</a>
+          <a href="#betaflight" className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name="betaflight" className="w-5 h-5 mx-auto text-neon mb-1" />Betaflight</a>
           <SaveToHangar ids={ids} tools={tools} mode={mode} hangar={hangar} setHangar={setHangar} build={build} />
         </div>
       )}
-
-      <section className="mt-6">
-        <h2 className="font-black text-lg mb-2">בדיקת תאימות</h2>
-        {empty ? <p className="text-sm text-muted">בחר חלקים, והבדיקה תתעדכן כאן בזמן אמת.</p> : (
-          <div className="space-y-2">
-            {errors.map((e, k) => <IssueRow key={"e" + k} i={e} />)}
-            {warns.map((e, k) => <IssueRow key={"w" + k} i={e} />)}
-            {!errors.length && !warns.length && <p className="text-neon text-sm font-bold">✓ הכול מתאים. אפשר לעבור לרשימת הקניות.</p>}
-            {oks.length > 0 && (
-              <details className="text-sm"><summary className="cursor-pointer text-muted osd text-xs py-1">{oks.length} בדיקות עברו</summary>
-                <div className="flex flex-wrap gap-1.5 mt-2">{oks.map((o, k) => <Level key={k} level="ok">{o.title}: {o.msg}</Level>)}</div>
-              </details>
-            )}
-          </div>
-        )}
-      </section>
-
       {!empty && (
-        <div className="fixed inset-x-0 z-30" style={{ bottom: "calc(58px + env(safe-area-inset-bottom, 0px))" }}>
-          <div className="max-w-3xl mx-auto gutter">
-            <div className="hud flex items-center justify-between gap-3 px-4 py-3" style={{ background: "rgba(13,17,20,.97)" }}>
-              <div className="osd text-sm leading-tight">
-                <div className="text-lg text-fg">{ils(t.price)}</div>
-                <div className="text-muted text-xs font-sans">{t.auw}g משקל המראה · <span className={errors.length ? "text-bad" : "text-neon"}>{errors.length ? `${errors.length} שגיאות` : "תואם"}</span></div>
+        <div className="lg:hidden fixed inset-x-0 z-30 md:mr-64" style={{ bottom: "calc(62px + env(safe-area-inset-bottom, 0px))" }}>
+          <div className="gutter">
+            <div className="hud flex items-center justify-between gap-3 px-4 py-3" style={{ background: "rgba(18,22,27,.97)", backdropFilter: "blur(10px)" }}>
+              <div className="leading-tight">
+                <div className="text-lg font-bold osd">{ils(t.price)}</div>
+                <div className="text-xs text-muted flex items-center gap-2"><span className="osd">{t.auw}g</span><StatusPill errors={errors.length} /></div>
               </div>
-              <a href="#cart" className="btn btn-neon">רשימת קניות ←</a>
+              <a href="#cart" className="btn btn-neon"><Icon name="cart" className="w-4 h-4" />רשימת קניות</a>
             </div>
           </div>
         </div>
       )}
-
-      {!empty && <div className="h-24" aria-hidden="true" />}
+      {!empty && <div className="h-24 lg:hidden" aria-hidden="true" />}
       {picker && <Picker cat={picker} build={build} current={build[picker]} onPick={p => choose(picker, p)} onClose={() => setPicker(null)} />}
     </div>
   );
@@ -456,10 +549,10 @@ function Picker({ cat, build, current, onPick, onClose }) {
           {list.map(({ p, errs }) => (
             <button key={p.id} onClick={() => onPick(p)} className={`w-full text-right border p-3 transition ${current?.id === p.id ? "bd-neon bg-neon-soft" : errs.length ? "border-line opacity-70" : "border-line hover:border-muted"}`}>
               <div className="flex justify-between gap-3">
-                <span className="font-bold leading-snug">{title(p)}</span>
+                <span className="font-bold leading-snug"><bdi>{title(p)}</bdi></span>
                 <span className="osd shrink-0">{ils(p.price)}</span>
               </div>
-              <div className="flex flex-wrap gap-1 mt-1.5">{specLine(p).map(s => <span key={s} className="chip">{s}</span>)}</div>
+              <div className="flex flex-wrap gap-1 mt-1.5">{specLine(p).map(s => <span key={s} className="chip"><bdi>{s}</bdi></span>)}</div>
               <div className="mt-2">{errs.length ? <Level level="error">{errs[0].title}</Level> : <Level level="ok">מתאים לבילד</Level>}</div>
               {errs.length > 0 && <p className="text-xs text-muted mt-1 leading-relaxed">{errs[0].msg}</p>}
             </button>
@@ -480,7 +573,7 @@ function Cart({ build, toolParts, errors, t, mode }) {
   if (mode !== "bnf" && !toolParts.some(p => p.kind === "iron")) suggestions.push(BY_ID["tool-pinecil"]);
   if (mode !== "bnf" && !toolParts.some(p => p.kind === "smoke")) suggestions.push(BY_ID["tool-smoke-stopper"]);
   if (!toolParts.some(p => p.kind === "lipobag")) suggestions.push(BY_ID["tool-lipo-bag"]);
-  const text = items.map(p => `• ${title(p)} — ${ils(p.price)}`).join("\n") + `\nסה"כ: ${ils(t.price)}`;
+  const text = items.map(p => `• $<bdi>{title(p)}</bdi> — ${ils(p.price)}`).join("\n") + `\nסה"כ: ${ils(t.price)}`;
   async function copy() {
     try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); }
     catch { const el = document.getElementById("cart-text"); if (el) { el.hidden = false; el.select(); } }
@@ -497,7 +590,7 @@ function Cart({ build, toolParts, errors, t, mode }) {
             <span className="text-neon"><Icon name={CATEGORIES[p.cat].icon} /></span>
             <div className="flex-1 min-w-0">
               <div className="text-xs text-muted">{CATEGORIES[p.cat].label}</div>
-              <div className="font-bold leading-snug">{title(p)}</div>
+              <div className="font-bold leading-snug"><bdi>{title(p)}</bdi></div>
             </div>
             <span className="osd text-sm">{ils(p.price)}</span>
             <a href={buyLink(p)} target="_blank" rel="noopener sponsored" className="btn btn-ghost !py-2 !px-3 text-sm">לקנייה</a>
@@ -652,7 +745,7 @@ function PerfPanel({ perf }) {
 }
 
 // ---------- hangar ----------
-function SaveToHangar({ ids, tools, mode, hangar, setHangar, build }) {
+function SaveToHangar({ ids, tools, mode, hangar, setHangar, build, variant }) {
   const [open, setOpen] = useState(false);
   const def = (build.bnf ? build.bnf.name : build.frame ? build.frame.name : "הבילד שלי").split(" (")[0];
   const [name, setName] = useState(def);
@@ -664,9 +757,9 @@ function SaveToHangar({ ids, tools, mode, hangar, setHangar, build }) {
   }
   return (
     <>
-      <button onClick={() => { setName(def); setOpen(true); }} className="border border-line bg-panel p-3 text-center text-sm hover:border-muted">
-        <span className="block text-neon mb-1"><Icon name="bnf" className="w-5 h-5 mx-auto" /></span>{saved ? "✓ נשמר" : "שמור להאנגר"}
-      </button>
+      {variant === "row"
+        ? <button onClick={() => { setName(def); setOpen(true); }} className="nav-item w-full"><Icon name={saved ? "check" : "save"} className="w-[18px] h-[18px]" />{saved ? "נשמר בהאנגר" : "שמירה להאנגר"}</button>
+        : <button onClick={() => { setName(def); setOpen(true); }} className="border border-line bg-panel p-3 text-center text-[13px] card-hover"><Icon name={saved ? "check" : "save"} className="w-5 h-5 mx-auto text-neon mb-1" />{saved ? "נשמר" : "שמירה"}</button>}
       {open && (
         <div className="fixed inset-0 z-50 grid place-items-center gutter" style={{ background: "rgba(0,0,0,.7)" }} onClick={e => e.target === e.currentTarget && setOpen(false)} role="dialog" aria-modal="true" aria-label="שמירת בילד">
           <form onSubmit={save} className="hud w-full max-w-sm p-5 rise">
@@ -810,8 +903,8 @@ function Tutor({ build, issues, view }) {
   return (
     <>
       {!open && (
-        <button onClick={() => setOpen(true)} className="fixed z-40 btn btn-neon !rounded-full !px-4 !py-3 text-sm" style={{ left: "calc(16px + env(safe-area-inset-left, 0px))", bottom: view === "build" ? "calc(150px + env(safe-area-inset-bottom, 0px))" : "calc(74px + env(safe-area-inset-bottom, 0px))" }} aria-label="שאל את המורה">
-          ? מורה AI
+        <button onClick={() => setOpen(true)} className={`fixed z-40 btn btn-neon !rounded-full !p-0 w-12 h-12 md:w-auto md:h-auto md:!px-4 md:!py-3 shadow-lg md:!bottom-8 ${view === "build" ? "lg:!left-[calc(16px+env(safe-area-inset-left,0px))]" : ""}`} style={{ left: "calc(16px + env(safe-area-inset-left, 0px))", bottom: view === "build" ? "calc(148px + env(safe-area-inset-bottom, 0px))" : "calc(76px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 10px 30px -8px rgba(45,212,191,.5)" }} aria-label="שאל את המורה">
+          <Icon name="tutor" className="w-5 h-5" /><span className="hidden md:inline">מורה AI</span>
         </button>
       )}
       {open && (
