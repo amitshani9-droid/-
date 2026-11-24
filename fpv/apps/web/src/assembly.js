@@ -26,16 +26,16 @@ export function assemblySteps(b) {
     body: `ה-ESC של ${stack.name} יושב למטה, על גומיות האנטי-ויברציה, עם החץ לכיוון קדמת הרחפן. מקצרים את חוטי המנועים לאורך הנכון, מצפים את הפדים ואת קצות החוטים בבדיל (tinning), ומלחימים כל מנוע לשלושת הפדים שלו. הסדר בין שלושת החוטים לא משנה: את כיוון הסיבוב מתקנים בתוכנה.`,
   });
   if (stack && battery) steps.push({
-    id: "power", title: `מחבר סוללה ${stack.connector} + קבל`,
+    id: "power", diagram: "PowerLead", title: `מחבר סוללה ${stack.connector} + קבל`,
     body: `מלחימים את כבל ה-${stack.connector} לפדי ה-BAT של ה-ESC (אדום ל-+, שחור ל--). חובה קבל Low-ESR (לרוב 1000µF / 35V ל-6S) על אותם פדים: הוא בולע קוצי מתח שמשבשים את הווידאו ואת בקר הטיסה.`,
     warn: "הפולריות חייבת להיות נכונה. חיבור הפוך שורף את ה-ESC מיידית.",
   });
   if (stack) steps.push({
-    id: "fc", title: "בקר הטיסה מעל ה-ESC",
+    id: "fc", diagram: "StackDiagram", title: "בקר הטיסה מעל ה-ESC",
     body: "מחברים את כבל ההרתמה (harness) בין ה-ESC ל-FC, ומרכיבים את ה-FC מעל עם החץ קדימה. אם החץ לא קדימה, אפשר לתקן ב-Betaflight (board alignment), אבל עדיף להרכיב נכון.",
   });
   if (receiver && stack) steps.push({
-    id: "rx", title: `מקלט ${receiver.name} ל-${UART_RX}`,
+    id: "rx", diagram: "WiringRx", title: `מקלט ${receiver.name} ל-${UART_RX}`,
     body: `4 חוטים: 5V, GND, ו-TX/RX בהצלבה: TX של המקלט ל-RX2 של הבקר, ו-RX של המקלט ל-TX2. מרחיקים את האנטנה מהקרבון ומהפרופים, ומעמידים אותה ב-90° לאנטנת הווידאו.`,
     warn: "TX ל-TX = אין קליטה. זו הטעות הכי נפוצה.",
   });
@@ -58,7 +58,7 @@ export function assemblySteps(b) {
     body: "מחברים USB (עדיין בלי פרופים) ומגדירים פורטים, מקלט, מנועים ומתגים. יש לנו קובץ CLI מוכן לבילד שלך.",
   });
   if (props) steps.push({
-    id: "props", title: `פרופלורים (${props.size}") אחרונים`,
+    id: "props", diagram: "PropDirection", title: `פרופלורים (${props.size}") אחרונים`,
     body: "רק אחרי שכל ההגדרות נבדקו. ב-Props Out (ברירת המחדל ב-Betaflight 4.x): הפרופ הקדמי-ימני מסתובב נגד כיוון השעון. בודקים את כיוון כל מנוע בטאב Motors לפני שמרכיבים. מהדקים את האומים חזק.",
     warn: "פרופ בכיוון לא נכון = הרחפן מתהפך ברגע ההמראה.",
   });

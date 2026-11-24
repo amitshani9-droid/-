@@ -7,6 +7,56 @@ import { QUESTIONS, profileFrom, presetFor, STEPS } from "./quiz.js";
 import { LESSONS, PREFLIGHT, LIPO_RULES } from "./lessons.js";
 import { buyLink, CONFIG } from "./config.js";
 import { Drone, Icon, Level, ils } from "./ui.jsx";
+import BuildDiagram from "./BuildDiagram.jsx";
+import { DIAGRAMS } from "./diagrams.jsx";
+
+// ---------- toast + small hooks ----------
+export function toast(msg, kind = "ok") { window.dispatchEvent(new CustomEvent("g4f-toast", { detail: { msg, kind } })); }
+function Toaster() {
+  const [t, setT] = useState(null);
+  useEffect(() => {
+    let h;
+    const f = e => { setT({ ...e.detail, id: Date.now() }); clearTimeout(h); h = setTimeout(() => setT(null), 2600); };
+    addEventListener("g4f-toast", f); return () => { removeEventListener("g4f-toast", f); clearTimeout(h); };
+  }, []);
+  if (!t) return null;
+  return (
+    <div className="toast" role="status" aria-live="polite">
+      <div key={t.id} className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium shadow-xl border ${t.kind === "error" ? "lv-error" : "lv-ok"}`} style={{ background: t.kind === "error" ? "#2a1515" : "#0f2522" }}>
+        <Icon name={t.kind === "error" ? "warn" : "ok"} className="w-4 h-4" />{t.msg}
+      </div>
+    </div>
+  );
+}
+function useAnimatedNumber(v) {
+  const [n, setN] = useState(v);
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setN(v); return; }
+    const from = n, start = window.performance.now(); let raf;
+    const step = t => { const k = Math.min(1, (t - start) / 450); setN(from + (v - from) * (1 - Math.pow(1 - k, 3))); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step); return () => cancelAnimationFrame(raf);
+  }, [v]);
+  return n;
+}
+function BackLink({ href, children }) {
+  return <a href={href} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg transition"><Icon name="back" className="w-4 h-4 rotate-180" />{children}</a>;
+}
+function PageHeader({ eyebrow, title, desc, back, backLabel, children }) {
+  return (
+    <div className="mb-6">
+      {back && <BackLink href={back}>{backLabel}</BackLink>}
+      <div className={`flex items-end justify-between gap-4 flex-wrap ${back ? "mt-3" : ""}`}>
+        <div className="min-w-0">
+          {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+          <h1 className="text-[1.75rem] font-extrabold mt-1 leading-tight">{title}</h1>
+          {desc && <p className="text-[15px] text-muted mt-1.5 max-w-2xl leading-relaxed">{desc}</p>}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+function Diagram({ name, ...props }) { const D = DIAGRAMS[name]; return D ? <D {...props} /> : null; }
 
 const PARTS = data.parts;
 const title = p => (["Generic", "DIY"].includes(p.brand) ? "" : p.brand + " ") + p.name;
@@ -112,6 +162,7 @@ export default function App() {
         </main>
       </div>
       <BottomNav view={view} />
+      <Toaster />
       {["build", "guide", "betaflight", "lesson", "learn", "route", "cart"].includes(view) && <Tutor build={build} issues={issues} view={view} />}
     </div>
   );
@@ -268,7 +319,7 @@ function Quiz({ answers, setAnswers }) {
   return (
     <div className="rise" key={q.id}>
       <div className="flex items-center justify-between osd text-xs text-muted mb-2">
-        <button onClick={() => i > 0 ? setI(i - 1) : go("")} className="hover:text-fg">→ חזרה</button>
+        <button onClick={() => i > 0 ? setI(i - 1) : go("")} className="inline-flex items-center gap-1.5 hover:text-fg"><Icon name="back" className="w-4 h-4 rotate-180" />חזרה</button>
         <span>שאלה {i + 1}/{QUESTIONS.length}</span>
       </div>
       <div className="h-1 bg-panel2 mb-6"><div className="h-full bg-neon transition-all" style={{ width: `${(i + 1) / QUESTIONS.length * 100}%` }} /></div>
@@ -279,7 +330,7 @@ function Quiz({ answers, setAnswers }) {
           const sel = q.multi ? (val || []).includes(o.v) : val === o.v;
           return (
             <button key={o.v} onClick={() => pick(o.v)} className={`text-right border p-4 bg-panel transition ${sel ? "bd-neon bg-neon-soft" : "border-line hover:border-muted"}`} aria-pressed={sel}>
-              <div className="font-bold flex items-center justify-between">{o.label}{sel && <span className="text-neon osd">✓</span>}</div>
+              <div className="font-bold flex items-center justify-between">{o.label}{sel && <span className="w-5 h-5 grid place-items-center rounded-full bg-neon text-[#032420]"><Icon name="check" className="w-3.5 h-3.5" strokeWidth={3} /></span>}</div>
               {o.sub && <div className="text-sm text-muted mt-0.5">{o.sub}</div>}
             </button>
           );
@@ -343,7 +394,7 @@ function Route({ profile, quizDone, applyPreset, steps, setSteps, ids }) {
               {n < list.length - 1 && <span className="absolute right-[13px] top-7 bottom-0 w-px bg-line" />}
               <button onClick={() => setSteps({ ...steps, [s.id]: !steps[s.id] })} disabled={s.id === "quiz"}
                 className={`absolute right-0 top-0.5 w-7 h-7 grid place-items-center border osd text-xs ${d ? "bg-neon text-ink border-neon" : "border-line text-muted bg-panel"}`}
-                aria-label={d ? "סמן כלא הושלם" : "סמן כהושלם"}>{d ? "✓" : n + 1}</button>
+                aria-label={d ? "סמן כלא הושלם" : "סמן כהושלם"}>{d ? <Icon name="check" className="w-4 h-4" strokeWidth={3} /> : n + 1}</button>
               <div className="flex items-baseline gap-2 flex-wrap">
                 <h3 className={`font-bold ${d ? "text-muted" : ""}`}>{s.title}</h3>
                 {s.time && <span className="osd text-[11px] text-muted">{s.time}</span>}
@@ -369,9 +420,13 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
 
   function choose(cat, part) {
     setIds({ ...ids, [cat]: part ? part.id : undefined });
-    if (part && errorsIfChosen(build, part).length) setShakeId(cat);
+    const bad = part ? errorsIfChosen(build, part) : [];
+    if (bad.length) { setShakeId(cat); toast(bad[0].title, "error"); }
+    else if (part) toast(`${CATEGORIES[cat].label.split(" (")[0]}: נבחר`);
     setPicker(null);
   }
+  const price = useAnimatedNumber(t.price);
+  const ready = !empty && !errors.length && !missing.length;
 
   const compat = (
     <section>
@@ -421,6 +476,14 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-6 mt-5">
         <div className="min-w-0 space-y-6">
+          {ready && (
+            <div className="border lv-ok p-4 flex items-center gap-3 pop">
+              <span className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-neon text-[#032420]"><Icon name="check" className="w-5 h-5" strokeWidth={3} /></span>
+              <div className="flex-1 min-w-0"><div className="font-bold" style={{ color: "var(--fg)" }}>הבילד מוכן</div><div className="text-sm" style={{ color: "#b8c2cc" }}>כל החלקים נבחרו וכל בדיקות התאימות עברו.</div></div>
+              <a href="#cart" className="btn btn-neon hidden sm:inline-flex">לרשימת הקניות</a>
+            </div>
+          )}
+          <BuildDiagram build={build} errors={errors} missing={missing} mode={mode} onPick={setPicker} />
           <div className="grid sm:grid-cols-2 gap-2.5">
             {cats.map(c => {
               const p = build[c];
@@ -451,7 +514,7 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
           <div className="sticky top-8 space-y-3">
             <div className="hud p-5">
               <div className="text-xs text-muted">סה"כ משוער</div>
-              <div className="text-[2rem] font-extrabold osd leading-tight mt-0.5">{ils(t.price)}</div>
+              <div className="text-[2rem] font-extrabold osd leading-tight mt-0.5">{ils(price)}</div>
               <div className="flex items-center justify-between mt-2 text-sm"><span className="text-muted osd">{t.auw}g משקל המראה</span><StatusPill errors={errors.length} /></div>
               {perf && <div className="grid grid-cols-2 gap-2 mt-4">
                 <div className="bg-panel2 rounded-[10px] p-2.5"><div className="text-[11px] text-muted">זמן טיסה</div><div className="osd font-bold" dir="ltr" style={{ textAlign: "right" }}>{perf.flightMin[0]}–{perf.flightMin[1]}′</div></div>
@@ -483,7 +546,7 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
           <div className="gutter">
             <div className="hud flex items-center justify-between gap-3 px-4 py-3" style={{ background: "rgba(18,22,27,.97)", backdropFilter: "blur(10px)" }}>
               <div className="leading-tight">
-                <div className="text-lg font-bold osd">{ils(t.price)}</div>
+                <div className="text-lg font-bold osd">{ils(price)}</div>
                 <div className="text-xs text-muted flex items-center gap-2"><span className="osd">{t.auw}g</span><StatusPill errors={errors.length} /></div>
               </div>
               <a href="#cart" className="btn btn-neon"><Icon name="cart" className="w-4 h-4" />רשימת קניות</a>
@@ -500,7 +563,7 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
 function IssueRow({ i }) {
   return (
     <div className={`border p-3 ${i.level === "error" ? "lv-error" : "lv-warn"}`} style={{ color: "inherit" }}>
-      <div className={`font-bold text-sm ${i.level === "error" ? "text-bad" : "text-warn"}`}>{i.level === "error" ? "✕" : "!"} {i.title}</div>
+      <div className={`font-semibold text-sm flex items-center gap-1.5 ${i.level === "error" ? "text-bad" : "text-warn"}`}><Icon name={i.level === "error" ? "x" : "warn"} className="w-4 h-4" strokeWidth={2.2} />{i.title}</div>
       <p className="text-sm text-fg mt-1 leading-relaxed">{i.msg}</p>
       {i.fix && <p className="text-xs text-muted mt-1">הפתרון: {i.fix}</p>}
     </div>
@@ -535,29 +598,40 @@ function ToolsSlot({ tools, setTools }) {
 }
 
 function Picker({ cat, build, current, onPick, onClose }) {
-  const list = PARTS.filter(p => p.cat === cat).map(p => ({ p, errs: errorsIfChosen(build, p) }))
+  const [onlyOk, setOnlyOk] = useState(false);
+  const [q, setQ] = useState("");
+  const all = PARTS.filter(p => p.cat === cat).map(p => ({ p, errs: errorsIfChosen(build, p) }))
     .sort((a, b) => (a.errs.length > 0) - (b.errs.length > 0) || a.p.price - b.p.price);
+  const okCount = all.filter(x => !x.errs.length).length;
+  const list = all.filter(x => (!onlyOk || !x.errs.length) && (!q || title(x.p).toLowerCase().includes(q.toLowerCase())));
   useEffect(() => { const k = e => e.key === "Escape" && onClose(); addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,.7)" }} onClick={e => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true" aria-label={CATEGORIES[cat].label}>
-      <div className="w-full max-w-xl bg-panel border border-line max-h-[85vh] flex flex-col rise" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        <div className="flex items-center justify-between p-4 border-b border-line">
-          <h2 className="font-black flex items-center gap-2"><span className="text-neon"><Icon name={CATEGORIES[cat].icon} /></span>{CATEGORIES[cat].label}</h2>
-          <button onClick={onClose} className="osd text-muted px-2" aria-label="סגור">✕</button>
+    <div className="fixed inset-0 z-50 flex items-end md:items-stretch justify-center md:justify-end" style={{ background: "rgba(3,5,8,.65)", backdropFilter: "blur(2px)" }} onClick={e => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true" aria-label={CATEGORIES[cat].label}>
+      <div className="w-full md:w-[440px] bg-panel border border-line max-h-[88vh] md:max-h-none md:h-full flex flex-col picker-panel" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+        <div className="p-4 pb-3 border-b border-line">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-lg flex items-center gap-2.5"><span className="w-9 h-9 grid place-items-center rounded-[10px] bg-neon-soft text-neon"><Icon name={CATEGORIES[cat].icon} className="w-[18px] h-[18px]" /></span>{CATEGORIES[cat].label}</h2>
+            <button onClick={onClose} className="w-9 h-9 grid place-items-center rounded-full text-muted hover:text-fg hover:bg-panel2" aria-label="סגור"><Icon name="x" className="w-5 h-5" /></button>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            {all.length > 5 && <><label htmlFor="pick-q" className="sr-only">חיפוש</label><input id="pick-q" value={q} onChange={e => setQ(e.target.value)} placeholder="חיפוש לפי שם או יצרן" className="flex-1 min-w-0 bg-panel2 border border-line px-3 py-2 text-sm text-fg" /></>}
+            <button onClick={() => setOnlyOk(!onlyOk)} aria-pressed={onlyOk} className={`shrink-0 text-xs font-medium px-3 py-2 border transition ${onlyOk ? "lv-ok" : "border-line text-muted hover:text-fg"}`}>רק מתאימים ({okCount})</button>
+          </div>
         </div>
         <div className="overflow-y-auto p-3 space-y-2">
           {list.map(({ p, errs }) => (
-            <button key={p.id} onClick={() => onPick(p)} className={`w-full text-right border p-3 transition ${current?.id === p.id ? "bd-neon bg-neon-soft" : errs.length ? "border-line opacity-70" : "border-line hover:border-muted"}`}>
+            <button key={p.id} onClick={() => onPick(p)} className={`w-full text-right border p-3.5 transition ${current?.id === p.id ? "bd-neon bg-neon-soft" : errs.length ? "border-line opacity-75 hover:opacity-100" : "border-line card-hover"}`}>
               <div className="flex justify-between gap-3">
-                <span className="font-bold leading-snug"><bdi>{title(p)}</bdi></span>
-                <span className="osd shrink-0">{ils(p.price)}</span>
+                <span className="font-semibold leading-snug"><bdi>{title(p)}</bdi></span>
+                <span className="osd shrink-0 font-semibold">{ils(p.price)}</span>
               </div>
-              <div className="flex flex-wrap gap-1 mt-1.5">{specLine(p).map(s => <span key={s} className="chip"><bdi>{s}</bdi></span>)}</div>
-              <div className="mt-2">{errs.length ? <Level level="error">{errs[0].title}</Level> : <Level level="ok">מתאים לבילד</Level>}</div>
-              {errs.length > 0 && <p className="text-xs text-muted mt-1 leading-relaxed">{errs[0].msg}</p>}
+              <div className="flex flex-wrap gap-1 mt-2">{specLine(p).map(s => <span key={s} className="chip"><bdi>{s}</bdi></span>)}</div>
+              <div className="mt-2.5 flex items-center gap-2 flex-wrap">{current?.id === p.id ? <Level level="ok">נבחר</Level> : errs.length ? <Level level="error">{errs[0].title}</Level> : <Level level="ok">מתאים לבילד</Level>}</div>
+              {errs.length > 0 && <p className="text-xs text-muted mt-1.5 leading-relaxed">{errs[0].msg}</p>}
             </button>
           ))}
-          {current && <button onClick={() => onPick(null)} className="w-full btn btn-ghost">הסר בחירה</button>}
+          {!list.length && <p className="text-sm text-muted text-center py-8">אין תוצאות. נסו לנקות את החיפוש או את הסינון.</p>}
+          {current && <button onClick={() => onPick(null)} className="w-full btn btn-ghost mt-1"><Icon name="trash" className="w-4 h-4" />הסרת הבחירה</button>}
         </div>
       </div>
     </div>
@@ -581,13 +655,12 @@ function Cart({ build, toolParts, errors, t, mode }) {
   if (!items.length) return <div className="text-center mt-10"><p className="text-muted">הרשימה ריקה.</p><a className="btn btn-neon mt-4" href="#build">לקונפיגורטור</a></div>;
   return (
     <div className="rise">
-      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
-      <h1 className="text-2xl font-black mt-2">רשימת קניות</h1>
+      <PageHeader back="#build" backLabel="חזרה לקונפיגורטור" eyebrow={`${items.length} פריטים`} title="רשימת קניות" desc="כל החלקים של הבילד, עם קישור קנייה לכל אחד." />
       {errors.length > 0 && <p className="lv-error border p-3 mt-3 text-sm">יש {errors.length} שגיאות תאימות בבילד. כדאי לתקן אותן לפני שקונים. <a href="#build" className="underline">לתיקון</a></p>}
       <div className="hud mt-4 divide-y divide-[color:var(--line)]">
         {items.map(p => (
-          <div key={p.id} className="flex items-center gap-3 p-3.5">
-            <span className="text-neon"><Icon name={CATEGORIES[p.cat].icon} /></span>
+          <div key={p.id} className="flex items-center gap-3 p-3.5 sm:px-5">
+            <span className="shrink-0 w-9 h-9 grid place-items-center rounded-[10px] bg-neon-soft text-neon"><Icon name={CATEGORIES[p.cat].icon} className="w-[18px] h-[18px]" /></span>
             <div className="flex-1 min-w-0">
               <div className="text-xs text-muted">{CATEGORIES[p.cat].label}</div>
               <div className="font-bold leading-snug"><bdi>{title(p)}</bdi></div>
@@ -596,22 +669,22 @@ function Cart({ build, toolParts, errors, t, mode }) {
             <a href={buyLink(p)} target="_blank" rel="noopener sponsored" className="btn btn-ghost !py-2 !px-3 text-sm">לקנייה</a>
           </div>
         ))}
-        <div className="flex justify-between p-4 osd"><span className="text-muted">סה"כ משוער</span><span className="text-xl text-neon">{ils(t.price)}</span></div>
+        <div className="flex justify-between items-baseline p-4 sm:px-5"><span className="text-muted">סה"כ משוער</span><span className="text-2xl font-extrabold osd">{ils(t.price)}</span></div>
       </div>
       {suggestions.length > 0 && (
         <div className="mt-5">
           <h2 className="font-bold mb-2">לא לשכוח</h2>
           <div className="grid sm:grid-cols-3 gap-2">
             {suggestions.map(p => (
-              <a key={p.id} href={buyLink(p)} target="_blank" rel="noopener sponsored" className="border border-line bg-panel p-3 text-sm hover:border-muted">
-                <div className="font-bold">{p.name}</div><div className="osd text-muted text-xs mt-1">{ils(p.price)} · לקנייה ←</div>
+              <a key={p.id} href={buyLink(p)} target="_blank" rel="noopener sponsored" className="border border-line bg-panel p-3.5 text-sm card-hover">
+                <div className="font-semibold">{p.name}</div><div className="osd text-muted text-xs mt-1">{ils(p.price)} · <span className="text-neon">לקנייה</span></div>
               </a>
             ))}
           </div>
         </div>
       )}
       <div className="flex flex-wrap gap-2 mt-5">
-        <button onClick={copy} className="btn btn-ghost">{copied ? "✓ הועתק" : "העתק רשימה"}</button>
+        <button onClick={copy} className="btn btn-ghost"><Icon name={copied ? "check" : "copy"} className="w-4 h-4" />{copied ? "הועתק" : "העתקת הרשימה"}</button>
         <a className="btn btn-ghost" target="_blank" rel="noopener" href={`https://wa.me/?text=${encodeURIComponent("הבילד שלי ב-" + CONFIG.BRAND + ":\n" + text)}`}>שלח בוואטסאפ</a>
       </div>
       <textarea id="cart-text" hidden readOnly value={text} className="w-full mt-3 bg-panel border border-line p-3 text-sm h-40" />
@@ -623,21 +696,36 @@ function Cart({ build, toolParts, errors, t, mode }) {
 // ---------- lessons ----------
 function Learn({ done }) {
   const n = LESSONS.filter(l => done[l.id]).length;
+  const units = [...new Set(LESSONS.map(l => l.unit))];
+  const nextUp = LESSONS.find(l => !done[l.id]);
   return (
     <div className="rise">
-      <h1 className="text-2xl font-black">שיעורי יסוד</h1>
-      <p className="text-sm text-muted">6 שיעורים של 3–4 דקות. כל שיעור נגמר בשאלת בדיקה אחת.</p>
-      <div className="h-1 bg-panel2 mt-4"><div className="h-full bg-neon" style={{ width: `${n / LESSONS.length * 100}%` }} /></div>
-      <p className="osd text-xs text-muted mt-1">{n}/{LESSONS.length} הושלמו</p>
-      <div className="space-y-2 mt-4">
-        {LESSONS.map((l, k) => (
-          <a key={l.id} href={"#lesson-" + l.id} className="flex items-center gap-3 border border-line bg-panel p-4 hover:border-muted">
-            <span className={`w-8 h-8 grid place-items-center border osd text-sm ${done[l.id] ? "bg-neon text-ink border-neon" : "border-line text-muted"}`}>{done[l.id] ? "✓" : k + 1}</span>
-            <span className="flex-1"><span className="block text-xs text-muted">{l.unit} · {l.min} דק'</span><span className="font-bold">{l.title}</span></span>
-            <span className="text-muted">←</span>
-          </a>
-        ))}
+      <PageHeader eyebrow="יחידות 1–2 מתוך הסילבוס" title="שיעורי יסוד" desc="6 שיעורים קצרים, כל אחד עם תרשים ושאלת בדיקה. מסיימים את כולם ויודעים מה כל חלק עושה ואיך טסים בבטחה." />
+      <div className="hud p-5 flex items-center gap-5 flex-wrap">
+        <div className="relative w-16 h-16 shrink-0">
+          <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--panel2)" strokeWidth="3.5" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--neon)" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${n / LESSONS.length * 97.4} 97.4`} /></svg>
+          <span className="absolute inset-0 grid place-items-center font-bold osd">{n}/{LESSONS.length}</span>
+        </div>
+        <div className="flex-1 min-w-[180px]">
+          <div className="font-semibold">{n === LESSONS.length ? "סיימתם את כל שיעורי היסוד" : nextUp ? `הבא בתור: ${nextUp.title}` : ""}</div>
+          <div className="text-sm text-muted mt-0.5">{n === LESSONS.length ? "השלב הבא: צ'קליסט הבטיחות והטיסה הראשונה." : `${LESSONS.length - n} שיעורים נשארו, כ-${LESSONS.filter(l => !done[l.id]).reduce((a, l) => a + l.min, 0)} דקות.`}</div>
+        </div>
+        <a href={nextUp ? "#lesson-" + nextUp.id : "#safety"} className="btn btn-neon">{nextUp ? (n ? "להמשיך" : "להתחיל") : "לצ'קליסט"}<Icon name="back" className="w-4 h-4" /></a>
       </div>
+      {units.map(u => (
+        <section key={u} className="mt-7">
+          <h2 className="text-sm font-semibold text-muted mb-2.5">{u}</h2>
+          <div className="grid sm:grid-cols-2 gap-2.5">
+            {LESSONS.map((l, k) => l.unit !== u ? null : (
+              <a key={l.id} href={"#lesson-" + l.id} className="flex items-center gap-3 border border-line bg-panel p-4 card-hover">
+                <span className={`shrink-0 w-9 h-9 grid place-items-center rounded-full text-sm font-bold osd ${done[l.id] ? "bg-neon text-[#032420]" : "bg-panel2 text-muted"}`}>{done[l.id] ? <Icon name="check" className="w-4 h-4" strokeWidth={3} /> : k + 1}</span>
+                <span className="flex-1 min-w-0"><span className="block font-semibold leading-snug">{l.title}</span><span className="block text-xs text-muted mt-0.5">{l.min} דקות{l.body.some(b => b[2]) ? " · עם תרשים" : ""}</span></span>
+                <Icon name="back" className="w-4 h-4 text-muted" />
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
@@ -649,37 +737,45 @@ function Lesson({ hash, done, setDone }) {
   const [ans, setAns] = useState(null);
   useEffect(() => setAns(null), [id]);
   if (!l) return <p className="text-muted">השיעור לא נמצא. <a className="text-neon" href="#learn">לכל השיעורים</a></p>;
-  const nextL = LESSONS[idx + 1];
+  const nextL = LESSONS[idx + 1], prevL = LESSONS[idx - 1];
   const right = ans === l.quiz.correct;
   return (
-    <article className="rise" key={id}>
-      <a href="#learn" className="osd text-xs text-muted">→ כל השיעורים</a>
-      <div className="osd text-xs text-neon mt-3">{l.unit} · שיעור {idx + 1} · {l.min} דק'</div>
-      <h1 className="text-3xl font-black mt-1">{l.title}</h1>
-      <div className="space-y-5 mt-5 max-w-prose">
-        {l.body.map(([h, p]) => (
-          <section key={h}><h2 className="font-bold text-lg">{h}</h2><p className="text-[15.5px] leading-[1.8] text-fg/90 mt-1" style={{ color: "#cdd8d5" }}>{p}</p></section>
+    <article className="rise max-w-3xl" key={id}>
+      <PageHeader back="#learn" backLabel="כל השיעורים" eyebrow={`${l.unit} · שיעור ${idx + 1} מתוך ${LESSONS.length} · ${l.min} דקות`} title={l.title} />
+      <div className="flex gap-1.5 -mt-3 mb-6" aria-hidden="true">{LESSONS.map((x, k) => <span key={x.id} className="h-1 flex-1 rounded-full" style={{ background: k < idx ? "var(--neon)" : k === idx ? "#5eead4" : "var(--panel2)", opacity: k === idx ? 1 : k < idx ? .6 : 1 }} />)}</div>
+      <div className="space-y-7">
+        {l.body.map(([h, p, d]) => (
+          <section key={h}>
+            <h2 className="font-bold text-[1.15rem]">{h}</h2>
+            <p className="text-[16px] leading-[1.85] mt-1.5" style={{ color: "#c9d1db" }}>{p}</p>
+            {d && <Diagram name={d} />}
+          </section>
         ))}
       </div>
-      <section className="hud p-4 mt-7">
-        <div className="osd text-xs text-neon">שאלת בדיקה</div>
-        <h3 className="font-bold mt-1">{l.quiz.q}</h3>
-        <div className="space-y-2 mt-3">
+      <section className="hud p-5 mt-9">
+        <span className="eyebrow">שאלת בדיקה</span>
+        <h3 className="font-bold text-lg mt-1">{l.quiz.q}</h3>
+        <div className="space-y-2 mt-4">
           {l.quiz.options.map((o, k) => {
-            const state = ans === null ? "" : k === l.quiz.correct ? "bd-neon bg-neon-soft" : k === ans ? "bd-error" : "opacity-60";
-            return <button key={k} disabled={ans !== null} onClick={() => { setAns(k); if (k === l.quiz.correct) setDone({ ...done, [l.id]: true }); }} className={`w-full text-right border border-line p-3 ${state}`}>{o}</button>;
+            const state = ans === null ? "card-hover" : k === l.quiz.correct ? "bd-neon bg-neon-soft" : k === ans ? "bd-error" : "opacity-50";
+            return (
+              <button key={k} disabled={ans !== null} onClick={() => { setAns(k); if (k === l.quiz.correct) { setDone({ ...done, [l.id]: true }); toast("שיעור הושלם"); } }} className={`w-full text-right border border-line bg-panel2 p-3.5 flex items-center gap-3 ${state}`}>
+                <span className="w-6 h-6 shrink-0 grid place-items-center rounded-full border border-line text-xs text-muted osd">{"אבג"[k]}</span>{o}
+              </button>
+            );
           })}
         </div>
         {ans !== null && (
-          <div className="mt-3 text-sm">
-            <p className={right ? "text-neon font-bold" : "text-bad font-bold"}>{right ? "✓ נכון!" : "✕ לא בדיוק."}</p>
-            <p className="text-muted mt-1">{l.quiz.explain}</p>
-            {!right && <button className="text-neon underline mt-2" onClick={() => setAns(null)}>לנסות שוב</button>}
+          <div className={`mt-4 p-3.5 border text-sm ${right ? "lv-ok" : "lv-error"}`}>
+            <p className="flex items-center gap-1.5 font-bold"><Icon name={right ? "ok" : "x"} className="w-4 h-4" />{right ? "נכון!" : "לא בדיוק."}</p>
+            <p className="mt-1" style={{ color: "#c9d1db" }}>{l.quiz.explain}</p>
+            {!right && <button className="font-semibold underline mt-2" onClick={() => setAns(null)}>לנסות שוב</button>}
           </div>
         )}
       </section>
-      <div className="flex justify-between mt-6">
-        {nextL ? <a href={"#lesson-" + nextL.id} className="btn btn-neon">לשיעור הבא ←</a> : <a href="#safety" className="btn btn-neon">לצ'קליסט הבטיחות ←</a>}
+      <div className="flex justify-between gap-3 mt-7">
+        {prevL ? <a href={"#lesson-" + prevL.id} className="btn btn-ghost"><Icon name="back" className="w-4 h-4 rotate-180" />הקודם</a> : <span />}
+        {nextL ? <a href={"#lesson-" + nextL.id} className="btn btn-neon">לשיעור הבא<Icon name="back" className="w-4 h-4" /></a> : <a href="#safety" className="btn btn-neon">לצ'קליסט הבטיחות<Icon name="back" className="w-4 h-4" /></a>}
       </div>
     </article>
   );
@@ -690,23 +786,27 @@ function Safety({ checks, setChecks }) {
   const all = PREFLIGHT.every((_, k) => checks["p" + k]);
   return (
     <div className="rise">
-      <h1 className="text-2xl font-black">בדיקת בטיחות לפני טיסה</h1>
-      <p className="text-sm text-muted">עד שכל הסעיפים מסומנים, לא ממריאים. מאפסים לפני כל יום טיסות.</p>
-      <div className="hud mt-4 p-2">
-        {PREFLIGHT.map((item, k) => (
-          <label key={k} className="flex items-start gap-3 p-2.5 cursor-pointer">
-            <input type="checkbox" className="mt-1 w-5 h-5 accent-[#4ff0c4]" checked={!!checks["p" + k]} onChange={e => setChecks({ ...checks, ["p" + k]: e.target.checked })} />
-            <span className={checks["p" + k] ? "text-muted line-through" : ""}>{item}</span>
-          </label>
-        ))}
+      <PageHeader eyebrow="לפני כל טיסה" title="בדיקת בטיחות" desc="עד שכל הסעיפים מסומנים, לא ממריאים. מאפסים את הרשימה לפני כל יום טיסות." />
+      <div className="hud p-1.5 divide-y divide-[color:var(--line)]">
+        {PREFLIGHT.map((item, k) => {
+          const on = !!checks["p" + k];
+          return (
+            <label key={k} className="flex items-center gap-3 p-3.5 cursor-pointer rounded-[10px] hover:bg-[rgba(255,255,255,.02)]">
+              <input type="checkbox" className="sr-only peer" checked={on} onChange={e => setChecks({ ...checks, ["p" + k]: e.target.checked })} />
+              <span className={`shrink-0 w-6 h-6 grid place-items-center rounded-[7px] border transition peer-focus-visible:ring-2 ring-[var(--neon)] ${on ? "bg-neon border-transparent text-[#032420]" : "border-[color:var(--line2)]"}`}>{on && <Icon name="check" className="w-4 h-4" strokeWidth={3} />}</span>
+              <span className={`text-[15px] ${on ? "text-muted line-through" : ""}`}>{item}</span>
+            </label>
+          );
+        })}
       </div>
-      <div className={`mt-3 p-3 border osd text-sm ${all ? "lv-ok" : "border-line text-muted"}`}>{all ? "✓ READY TO ARM · מוכן לטיסה" : `${PREFLIGHT.filter((_, k) => checks["p" + k]).length}/${PREFLIGHT.length} · עוד לא`}</div>
+      <div className={`mt-3 p-4 border text-sm flex items-center gap-2 font-semibold ${all ? "lv-ok pop" : "border-line text-muted"}`}><Icon name={all ? "ok" : "safety"} className="w-5 h-5" />{all ? "מוכנים לטיסה. טיסה בטוחה!" : `${PREFLIGHT.filter((_, k) => checks["p" + k]).length} מתוך ${PREFLIGHT.length} סומנו. עד שהכול מסומן, לא ממריאים.`}</div>
       <button className="text-xs text-muted underline mt-2" onClick={() => setChecks({})}>איפוס לרשימה חדשה</button>
 
-      <h2 className="font-black text-lg mt-8">5 כללי LiPo</h2>
-      <ul className="mt-2 space-y-1.5">{LIPO_RULES.map(r => <li key={r} className="flex gap-2 text-sm"><span className="text-warn osd">!</span>{r}</li>)}</ul>
+      <h2 className="font-bold text-lg mt-10">5 כללי LiPo</h2>
+      <Diagram name="LipoScale" />
+      <ul className="grid sm:grid-cols-2 gap-2 mt-2">{LIPO_RULES.map(r => <li key={r} className="flex items-center gap-2.5 text-sm border border-line bg-panel p-3"><span className="shrink-0 w-7 h-7 grid place-items-center rounded-full lv-warn border"><Icon name="warn" className="w-3.5 h-3.5" /></span>{r}</li>)}</ul>
 
-      <h2 className="font-black text-lg mt-8">רגולציה</h2>
+      <h2 className="font-bold text-lg mt-10">רגולציה</h2>
       <p className="text-sm text-muted mt-1 leading-relaxed">הכללים בישראל משתנים, ולכן לא נכתבים כאן כעובדה סופית. לפני טיסה ראשונה בדקו באתר רת"א את הדרישות העדכניות: רישום הכטב"ם, רישיון מטיס (לרחפן קטן מגיל 16), מגבלות גובה, מרחק ממגורים ואזורים אסורים.</p>
       <a className="btn btn-ghost mt-3" href="https://www.gov.il/he/search?query=%D7%A8%D7%97%D7%A4%D7%A0%D7%99%D7%9D" target="_blank" rel="noopener">חיפוש הנחיות רחפנים ב-gov.il ←</a>
       <p className="text-xs text-muted mt-6">התוכן חינוכי. האחריות להפעלת הרחפן היא של המטיס.</p>
@@ -753,7 +853,7 @@ function SaveToHangar({ ids, tools, mode, hangar, setHangar, build, variant }) {
   function save(e) {
     e.preventDefault();
     setHangar([{ id: Date.now().toString(36), name: name.trim() || def, mode, ids, tools, savedAt: new Date().toISOString() }, ...hangar].slice(0, 20));
-    setSaved(true); setOpen(false); setTimeout(() => setSaved(false), 2000);
+    setSaved(true); setOpen(false); toast("נשמר בהאנגר"); setTimeout(() => setSaved(false), 2000);
   }
   return (
     <>
@@ -779,11 +879,9 @@ function Hangar({ hangar, setHangar, setIds, setTools, setMode }) {
   function load(h) { setIds(h.ids); setTools(h.tools || []); setMode(h.mode); go("build"); }
   return (
     <div className="rise">
-      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
-      <h1 className="text-2xl font-black mt-2">האנגר שלי</h1>
-      <p className="text-sm text-muted">בילדים ששמרת במכשיר הזה. אפשר לטעון, להשוות ולמחוק.</p>
+      <PageHeader eyebrow={`${hangar.length} בילדים שמורים`} title="האנגר שלי" desc="בילדים ששמרתם במכשיר הזה. אפשר לטעון, להשוות ולמחוק." />
       {!hangar.length && <div className="hud p-6 mt-4 text-center"><p className="text-muted">ההאנגר ריק. בנה בילד בקונפיגורטור ולחץ "שמור להאנגר".</p><a href="#build" className="btn btn-neon mt-4">לקונפיגורטור</a></div>}
-      <div className="space-y-2 mt-4">
+      <div className="grid md:grid-cols-2 gap-3">
         {hangar.map(h => {
           const b = {}; Object.entries(h.ids || {}).forEach(([c, id]) => { if (id && BY_ID[id]) b[c] = BY_ID[id]; });
           const full = { frame: null, motors: null, stack: null, vtx: null, camera: null, receiver: null, props: null, battery: null, radio: null, goggles: null, charger: null, bnf: null, ...b };
@@ -791,7 +889,7 @@ function Hangar({ hangar, setHangar, setIds, setTools, setMode }) {
           const tt = totals(full, (h.tools || []).map(x => BY_ID[x]).filter(Boolean));
           const pf = performance(full);
           return (
-            <div key={h.id} className="border border-line bg-panel p-4">
+            <div key={h.id} className="border border-line bg-panel p-5">
               <div className="flex justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="font-bold">{h.name}</h3>
@@ -824,22 +922,21 @@ function Guide({ build, guideDone, setGuideDone, mode }) {
   const empty = !Object.values(build).some(Boolean);
   return (
     <div className="rise">
-      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
-      <h1 className="text-2xl font-black mt-2">{mode === "bnf" ? "הכנה לטיסה" : "מדריך הרכבה"}</h1>
-      <p className="text-sm text-muted">{empty ? "בחר חלקים בקונפיגורטור, והמדריך יתאים את עצמו אליהם." : "הצעדים נכתבו לפי החלקים שבחרת. סמן כל צעד כשסיימת."}</p>
+      <PageHeader back="#build" backLabel="חזרה לקונפיגורטור" eyebrow={`${steps.length} צעדים${!empty && build.frame ? " · " + build.frame.name.split(" (")[0] : ""}`} title={mode === "bnf" ? "הכנה לטיסה" : "מדריך הרכבה"} desc={empty ? "בחרו חלקים בקונפיגורטור, והמדריך יתאים את עצמו אליהם." : "הצעדים נכתבו לפי החלקים שבחרתם. סמנו כל צעד כשסיימתם."} />
       <div className="h-1 bg-panel2 mt-4"><div className="h-full bg-neon transition-all" style={{ width: `${n / steps.length * 100}%` }} /></div>
       <p className="osd text-xs text-muted mt-1">{n}/{steps.length}</p>
       <ol className="space-y-2.5 mt-4">
         {steps.map((s, k) => (
           <li key={s.id} className={`border bg-panel p-4 ${dm[s.id] ? "border-line opacity-70" : "border-line"}`}>
             <div className="flex gap-3">
-              <button onClick={() => toggle(s.id)} className={`shrink-0 w-8 h-8 grid place-items-center border osd text-sm ${dm[s.id] ? "bg-neon text-ink border-neon" : "border-line text-muted"}`} aria-label={dm[s.id] ? "סמן כלא בוצע" : "סמן כבוצע"} aria-pressed={!!dm[s.id]}>{dm[s.id] ? "✓" : k + 1}</button>
+              <button onClick={() => toggle(s.id)} className={`shrink-0 w-8 h-8 grid place-items-center border osd text-sm ${dm[s.id] ? "bg-neon text-ink border-neon" : "border-line text-muted"}`} aria-label={dm[s.id] ? "סמן כלא בוצע" : "סמן כבוצע"} aria-pressed={!!dm[s.id]}>{dm[s.id] ? <Icon name="check" className="w-4 h-4" strokeWidth={3} /> : k + 1}</button>
               <div className="min-w-0">
                 <h3 className="font-bold leading-snug">{s.title}</h3>
-                <p className="text-sm leading-relaxed mt-1" style={{ color: "#c3cfcc" }}>{s.body}</p>
-                {s.warn && <p className="text-sm text-warn mt-2">⚠ {s.warn}</p>}
+                <p className="text-[15px] leading-relaxed mt-1" style={{ color: "#c3cbd5" }}>{s.body}</p>
+                {s.warn && <p className="text-sm mt-3 p-2.5 border lv-warn flex items-start gap-2"><Icon name="warn" className="w-4 h-4 mt-0.5 shrink-0" /><span>{s.warn}</span></p>}
                 {s.tools && <div className="flex flex-wrap gap-1 mt-2">{s.tools.map(t => <span key={t} className="chip">{t}</span>)}</div>}
-                {s.link && <a href={s.link} className="text-neon underline text-sm inline-block mt-2">פתח ←</a>}
+                {s.diagram && <Diagram name={s.diagram} connector={build.stack ? build.stack.connector : undefined} />}
+                {s.link && <a href={s.link} className="btn btn-ghost !py-2 text-sm mt-3">פתיחה<Icon name="back" className="w-4 h-4" /></a>}
               </div>
             </div>
           </li>
@@ -859,15 +956,13 @@ function BetaflightView({ build }) {
   }
   return (
     <div className="rise">
-      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
-      <h1 className="text-2xl font-black mt-2">עוזר Betaflight</h1>
-      <p className="text-sm text-muted">קובץ הגדרות שמתאים לבילד שלך{digital ? " (כולל OSD למשדר הדיגיטלי)" : ""}. מדביקים בטאב CLI של Betaflight Configurator ולוחצים Enter.</p>
+      <PageHeader back="#build" backLabel="חזרה לקונפיגורטור" eyebrow="Betaflight 4.4 / 4.5" title="עוזר Betaflight" desc={`קובץ הגדרות שמתאים לבילד שלכם${digital ? ", כולל OSD למשדר הדיגיטלי" : ""}. מדביקים בטאב CLI של Betaflight Configurator ולוחצים Enter.`} />
       <div className="hud mt-4">
         <div className="flex items-center justify-between px-3 py-2 border-b border-line">
-          <span className="osd text-xs text-neon">CLI · BF 4.4/4.5</span>
-          <button onClick={copy} className="osd text-xs border border-line px-2 py-1 hover:border-muted">{copied ? "✓ הועתק" : "העתק"}</button>
+          <span className="flex items-center gap-1.5 text-xs text-muted"><Icon name="betaflight" className="w-4 h-4 text-neon" />cli.txt</span>
+          <button onClick={copy} className="text-xs border border-line px-2.5 py-1.5 hover:border-muted inline-flex items-center gap-1"><Icon name={copied ? "check" : "copy"} className="w-3.5 h-3.5" />{copied ? "הועתק" : "העתקה"}</button>
         </div>
-        <textarea id="cli-box" readOnly value={cli} dir="ltr" spellCheck="false" className="w-full bg-transparent osd text-[12.5px] leading-relaxed p-3 h-80 resize-y text-fg focus:outline-none" />
+        <textarea id="cli-box" readOnly value={cli} dir="ltr" spellCheck="false" className="w-full bg-transparent mono text-[12.5px] leading-relaxed p-4 h-96 resize-y text-fg focus:outline-none" />
       </div>
       <p className="text-xs text-warn mt-2">⚠ ההגדרות מניחות מקלט על UART2 ו-VTX על UART1, כמו במדריך ההרכבה. חיברתם אחרת? שנו את מספרי ה-serial. תמיד בלי פרופלורים כשהרחפן מחובר למחשב.</p>
       <h2 className="font-black text-lg mt-7">בדיקות אחרי ההדבקה</h2>
@@ -912,7 +1007,7 @@ function Tutor({ build, issues, view }) {
           <div className="w-full max-w-lg bg-panel border border-line h-[78vh] flex flex-col rise" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
             <div className="flex items-center justify-between p-3 border-b border-line">
               <div><h2 className="font-black">המורה של {CONFIG.BRAND}</h2><p className="text-[11px] text-muted">מכיר את הבילד שלך. לא מחליף את מנוע התאימות ואת צ'קליסט הבטיחות.</p></div>
-              <button onClick={() => setOpen(false)} className="osd text-muted px-2" aria-label="סגור">✕</button>
+              <button onClick={() => setOpen(false)} className="w-9 h-9 grid place-items-center rounded-full text-muted hover:text-fg hover:bg-panel2" aria-label="סגור"><Icon name="x" className="w-5 h-5" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
               {!msgs.length && <div className="text-sm text-muted">שאל כל שאלה על בנייה, הגדרות או טיסה. לדוגמה:
