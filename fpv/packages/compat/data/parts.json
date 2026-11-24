@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "currency": "ILS",
     "updated": "2026-11-24",
-    "note": "Prototype dataset. Prices are rough estimates and every spec is verified:false until checked against the manufacturer page (to be replaced by fpv-parts-extractor output)."
+    "note": "Prototype dataset. Prices are rough estimates and every spec is verified:false until checked against the manufacturer page (to be replaced by fpv-parts-extractor output). thrustG / thrustTotalG are rough full-throttle estimates for the intended props and cell count."
   },
   "parts": [
     {
@@ -156,7 +156,8 @@
       "tags": [
         "freestyle"
       ],
-      "verified": false
+      "verified": false,
+      "thrustG": 1550
     },
     {
       "id": "mot-velox-2207-1750",
@@ -181,7 +182,8 @@
         "freestyle",
         "budget"
       ],
-      "verified": false
+      "verified": false,
+      "thrustG": 1450
     },
     {
       "id": "mot-xing2-2207-2755",
@@ -205,7 +207,8 @@
       "tags": [
         "freestyle"
       ],
-      "verified": false
+      "verified": false,
+      "thrustG": 1500
     },
     {
       "id": "mot-xing2-2806-1300",
@@ -229,7 +232,8 @@
       "tags": [
         "longrange"
       ],
-      "verified": false
+      "verified": false,
+      "thrustG": 2100
     },
     {
       "id": "mot-speedx2-2105-2650",
@@ -254,7 +258,8 @@
         "cinematic",
         "whoop"
       ],
-      "verified": false
+      "verified": false,
+      "thrustG": 900
     },
     {
       "id": "stack-speedybee-f405-v4",
@@ -1010,7 +1015,9 @@
         "freestyle",
         "cinematic"
       ],
-      "verified": false
+      "verified": false,
+      "thrustTotalG": 6000,
+      "propSize": 5.1
     },
     {
       "id": "bnf-nazgul-f5-analog",
@@ -1028,7 +1035,9 @@
         "budget",
         "freestyle"
       ],
-      "verified": false
+      "verified": false,
+      "thrustTotalG": 5800,
+      "propSize": 5.1
     },
     {
       "id": "bnf-cinelog35-o4",
@@ -1045,7 +1054,9 @@
       "tags": [
         "cinematic"
       ],
-      "verified": false
+      "verified": false,
+      "thrustTotalG": 3200,
+      "propSize": 3.5
     },
     {
       "id": "bnf-chimera7-o3",
@@ -1062,7 +1073,9 @@
       "tags": [
         "longrange"
       ],
-      "verified": false
+      "verified": false,
+      "thrustTotalG": 7600,
+      "propSize": 7
     },
     {
       "id": "bnf-air65",
@@ -1080,7 +1093,9 @@
         "whoop",
         "budget"
       ],
-      "verified": false
+      "verified": false,
+      "thrustTotalG": 90,
+      "propSize": 1.2
     }
   ]
 }

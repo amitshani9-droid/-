@@ -78,3 +78,18 @@ test("totals: price sums, AUW counts only flying parts", () => {
   assert.ok(t.price > 3000);
   assert.ok(t.auw > 450 && t.auw < 700, String(t.auw));
 });
+
+import { performance } from "../src/index.js";
+test("performance: 5\" 6S freestyle lands in a realistic range", () => {
+  const p = performance(good);
+  assert.ok(p.twr > 8 && p.twr < 16, "twr " + p.twr);
+  assert.ok(p.flightMin[0] > 2.5 && p.flightMin[1] < 9, "time " + p.flightMin);
+  assert.ok(p.hoverThrottle > 15 && p.hoverThrottle < 45, "throttle " + p.hoverThrottle);
+});
+test("performance: 7\" Li-ion long range flies much longer than 5\"", () => {
+  const lr = { ...good, frame: P["frame-chimera7"], motors: P["mot-xing2-2806-1300"], props: P["props-hq-7x4x3"], battery: P["bat-p45b-6s1p"], stack: P["stack-blitz-f7-e55"] };
+  assert.ok(performance(lr).flightMin[0] > performance(good).flightMin[1] * 2);
+});
+test("performance: null without battery", () => {
+  assert.equal(performance({ ...good, battery: null }), null);
+});

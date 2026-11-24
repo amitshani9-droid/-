@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import data from "@compat/data/parts.json";
-import { CATEGORIES, SYSTEM_LABEL, PROTOCOL_LABEL, check, errorsIfChosen, totals, missingParts } from "@compat/src/index.js";
+import { CATEGORIES, SYSTEM_LABEL, PROTOCOL_LABEL, check, errorsIfChosen, totals, missingParts, performance } from "@compat/src/index.js";
+import { assemblySteps } from "./assembly.js";
+import { betaflightCli } from "./betaflight.js";
 import { QUESTIONS, profileFrom, presetFor, STEPS } from "./quiz.js";
 import { LESSONS, PREFLIGHT, LIPO_RULES } from "./lessons.js";
 import { buyLink, CONFIG } from "./config.js";
@@ -55,6 +57,8 @@ export default function App() {
   const [done, setDone] = useStored("lessons", {});
   const [steps, setSteps] = useStored("steps", {});
   const [checks, setChecks] = useStored("checks", {});
+  const [hangar, setHangar] = useStored("hangar", []);
+  const [guideDone, setGuideDone] = useStored("guide", {});
 
   const quizDone = QUESTIONS.every(q => answers[q.id] && (!q.multi || answers[q.id].length));
   const profile = useMemo(() => quizDone ? profileFrom(answers) : null, [answers, quizDone]);
@@ -70,6 +74,7 @@ export default function App() {
   const issues = useMemo(() => check(build), [build]);
   const errors = issues.filter(i => i.level === "error");
   const t = totals(build, toolParts);
+  const perf = useMemo(() => performance(build), [build]);
 
   function applyPreset() {
     const { build: b, tools: tl } = presetFor(profile);
@@ -84,7 +89,7 @@ export default function App() {
   }
 
   const view = hash.startsWith("lesson-") ? "lesson" : hash || "home";
-  const ctx = { answers, setAnswers, profile, quizDone, ids, setIds, tools, setTools, mode, setMode, build, toolParts, issues, errors, t, applyPreset, done, setDone, steps, setSteps, checks, setChecks, hash };
+  const ctx = { perf, hangar, setHangar, guideDone, setGuideDone, answers, setAnswers, profile, quizDone, ids, setIds, tools, setTools, mode, setMode, build, toolParts, issues, errors, t, applyPreset, done, setDone, steps, setSteps, checks, setChecks, hash };
 
   return (
     <div className="min-h-full flex flex-col">
@@ -98,8 +103,12 @@ export default function App() {
         {view === "learn" && <Learn {...ctx} />}
         {view === "lesson" && <Lesson {...ctx} />}
         {view === "safety" && <Safety {...ctx} />}
+        {view === "guide" && <Guide {...ctx} />}
+        {view === "betaflight" && <BetaflightView {...ctx} />}
+        {view === "hangar" && <Hangar {...ctx} />}
       </main>
       <BottomNav view={view} />
+      {["build", "guide", "betaflight", "lesson", "learn", "route", "cart"].includes(view) && <Tutor build={build} issues={issues} view={view} />}
     </div>
   );
 }
@@ -127,7 +136,7 @@ function TopBar({ t, errors, view, hasBuild }) {
 
 function BottomNav({ view }) {
   const items = [["route", "המסלול", "bnf"], ["build", "קונפיגורטור", "stack"], ["learn", "שיעורים", "camera"], ["safety", "בטיחות", "battery"]];
-  const active = v => view === v || (v === "learn" && view === "lesson") || (v === "build" && view === "cart") || (v === "route" && view === "quiz");
+  const active = v => view === v || (v === "learn" && view === "lesson") || (v === "build" && ["cart", "guide", "betaflight", "hangar"].includes(view)) || (v === "route" && view === "quiz");
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-line" style={{ background: "rgba(7,9,11,.94)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }} aria-label="ניווט ראשי">
       <div className="max-w-3xl mx-auto grid grid-cols-4 gutter">
@@ -243,8 +252,8 @@ function Route({ profile, quizDone, applyPreset, steps, setSteps, ids }) {
     radio: <>{p.have.includes("radio") ? "כבר יש לך שלט, מעולה. ודא שהוא ELRS 2.4GHz." : <>קונים שלט קודם: הוא עובד גם בסימולטור וגם עם כל רחפן בהמשך. ההמלצה שלנו: <b>{radioName}</b>.</>}</>,
     sim: p.simHours ? <>{p.simHours} שעות בסימולטור (Liftoff, Uncrashed או Velocidrone, כ-₪70–90) עם השלט מחובר ב-USB. מתחילים ב-Angle ועוברים כמה שיותר מהר ל-Acro. כל התרסקות בסימולטור חוסכת כסף אמיתי.</> : "יש לך ניסיון. 2–3 שעות חימום בסימולטור על הבילד החדש מספיקות.",
     build: <>פותחים את הבילד המומלץ, בודקים שאין שגיאות תאימות, ומחליפים חלקים לפי הטעם. <button className="text-neon underline" onClick={applyPreset}>לפתוח את הבילד המומלץ</button></>,
-    assemble: <>הסדר: מנועים לזרועות, סטאק על הפריים, הלחמת מנועים ל-ESC, מקלט ו-VTX ל-UART, מצלמה. חיבור ראשון תמיד דרך Smoke Stopper. מדריך הרכבה מונפש לפי הבילד שלך מגיע בשלב הבא; בינתיים עברו על <a className="text-neon underline" href="#lesson-components">שיעור הרכיבים</a>.</>,
-    setup: <>Betaflight Configurator: צריבת קושחה, הגדרת פורטים (UART של המקלט ושל ה-VTX), בינד למקלט, כיוון מנועים, מתג Arm, מצבי טיסה ו-Failsafe. {p.path === "bnf" ? "ברחפן מוכן רוב זה כבר מוגדר: רק בינד, מתגים ו-Failsafe." : ""}</>,
+    assemble: <>הסדר: מנועים לזרועות, סטאק על הפריים, הלחמת מנועים ל-ESC, מקלט ו-VTX ל-UART, מצלמה. חיבור ראשון תמיד דרך Smoke Stopper. יש לך <a className="text-neon underline" href="#guide">מדריך הרכבה צעד-אחר-צעד</a> שנבנה לפי החלקים שבחרת.</>,
+    setup: <>Betaflight Configurator: צריבת קושחה, הגדרת פורטים (UART של המקלט ושל ה-VTX), בינד למקלט, כיוון מנועים, מתג Arm, מצבי טיסה ו-Failsafe. {p.path === "bnf" ? "ברחפן מוכן רוב זה כבר מוגדר: רק בינד, מתגים ו-Failsafe. " : ""}<a className="text-neon underline" href="#betaflight">קובץ CLI מוכן לבילד שלך</a>.</>,
     safety: <>לפני כל טיסה: <a className="text-neon underline" href="#safety">הצ'קליסט</a>. עד שכל הסעיפים מסומנים, לא ממריאים.</>,
     fly: <>שטח פתוח, ריחוף נמוך, שמיניות גדולות ואיטיות. נחיתה ב-3.5V לתא. ואז: עוד סוללה.</>,
   };
@@ -292,7 +301,7 @@ function Route({ profile, quizDone, applyPreset, steps, setSteps, ids }) {
 }
 
 // ---------- configurator ----------
-function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts, issues, errors, t, quizDone, applyPreset }) {
+function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts, issues, errors, t, quizDone, applyPreset, perf, hangar, setHangar }) {
   const [picker, setPicker] = useState(null);
   const [shakeId, setShakeId] = useState(null);
   const cats = mode === "bnf" ? BNF_CATS : BUILD_CATS;
@@ -312,7 +321,7 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black">קונפיגורטור</h1>
-          <p className="text-sm text-muted">בחר חלק לכל מקום. כל בחירה נבדקת מול שאר הבילד.</p>
+          <p className="text-sm text-muted">בחר חלק לכל מקום. כל בחירה נבדקת מול שאר הבילד. <a href="#hangar" className="text-neon underline">האנגר שלי{hangar.length ? ` (${hangar.length})` : ""}</a></p>
         </div>
         <div className="flex border border-line osd text-xs" role="tablist">
           {[["build", "בנייה"], ["bnf", "מוכן (BNF)"]].map(([m, l]) => (
@@ -349,6 +358,15 @@ function Builder({ ids, setIds, tools, setTools, mode, setMode, build, toolParts
         })}
         <ToolsSlot tools={tools} setTools={setTools} />
       </div>
+
+      {perf && <PerfPanel perf={perf} />}
+      {!empty && (
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          <a href="#guide" className="border border-line bg-panel p-3 text-center text-sm hover:border-muted"><span className="block text-neon mb-1"><Icon name="tools" className="w-5 h-5 mx-auto" /></span>מדריך הרכבה</a>
+          <a href="#betaflight" className="border border-line bg-panel p-3 text-center text-sm hover:border-muted"><span className="block text-neon mb-1"><Icon name="stack" className="w-5 h-5 mx-auto" /></span>Betaflight CLI</a>
+          <SaveToHangar ids={ids} tools={tools} mode={mode} hangar={hangar} setHangar={setHangar} build={build} />
+        </div>
+      )}
 
       <section className="mt-6">
         <h2 className="font-black text-lg mb-2">בדיקת תאימות</h2>
@@ -600,5 +618,226 @@ function Safety({ checks, setChecks }) {
       <a className="btn btn-ghost mt-3" href="https://www.gov.il/he/search?query=%D7%A8%D7%97%D7%A4%D7%A0%D7%99%D7%9D" target="_blank" rel="noopener">חיפוש הנחיות רחפנים ב-gov.il ←</a>
       <p className="text-xs text-muted mt-6">התוכן חינוכי. האחריות להפעלת הרחפן היא של המטיס.</p>
     </div>
+  );
+}
+
+
+// ---------- performance ----------
+function PerfPanel({ perf }) {
+  const clsLabel = { freestyle: "5\" פריסטייל", cinematic: "סינווופ", longrange: "לונג ריינג'", whoop: "ווף" }[perf.cls];
+  return (
+    <section className="hud mt-5 p-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="font-black">ביצועים משוערים</h2>
+        <span className="osd text-[11px] text-muted">{clsLabel} · הערכה בלבד</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+        {[
+          ["זמן טיסה", `${perf.flightMin[0]}–${perf.flightMin[1]}`, "דק' בטיסה מעורבת"],
+          ["דחף-משקל", `${perf.twr}:1`, `${(perf.thrust / 1000).toFixed(1)} ק"ג דחף`],
+          ["גז בריחוף", `${perf.hoverThrottle}%`, "בערך"],
+          ["משקל המראה", `${perf.auw}g`, `${perf.usableWh}Wh שמישים`],
+        ].map(([k, v, sub]) => (
+          <div key={k} className="border border-line p-2.5">
+            <div className="text-[11px] text-muted">{k}</div>
+            <div className="osd text-xl text-neon leading-tight mt-0.5" dir="ltr" style={{ textAlign: "right" }}>{v}</div>
+            <div className="text-[11px] text-muted">{sub}</div>
+          </div>
+        ))}
+      </div>
+      {perf.notes.map((n, k) => <p key={k} className={`text-sm mt-2 ${n.level === "warn" ? "text-warn" : "text-muted"}`}>{n.level === "warn" ? "! " : ""}{n.msg}</p>)}
+      <p className="text-[11px] text-muted mt-2 leading-relaxed">החישוב מבוסס על נצילות ממוצעת לפי גודל הפרופ, דחף משוער מהיצרן ו-80% מהאנרגיה של הסוללה. הזמן בפועל תלוי בסגנון הטיסה, ברוח ובטמפרטורה.</p>
+    </section>
+  );
+}
+
+// ---------- hangar ----------
+function SaveToHangar({ ids, tools, mode, hangar, setHangar, build }) {
+  const [open, setOpen] = useState(false);
+  const def = (build.bnf ? build.bnf.name : build.frame ? build.frame.name : "הבילד שלי").split(" (")[0];
+  const [name, setName] = useState(def);
+  const [saved, setSaved] = useState(false);
+  function save(e) {
+    e.preventDefault();
+    setHangar([{ id: Date.now().toString(36), name: name.trim() || def, mode, ids, tools, savedAt: new Date().toISOString() }, ...hangar].slice(0, 20));
+    setSaved(true); setOpen(false); setTimeout(() => setSaved(false), 2000);
+  }
+  return (
+    <>
+      <button onClick={() => { setName(def); setOpen(true); }} className="border border-line bg-panel p-3 text-center text-sm hover:border-muted">
+        <span className="block text-neon mb-1"><Icon name="bnf" className="w-5 h-5 mx-auto" /></span>{saved ? "✓ נשמר" : "שמור להאנגר"}
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-center gutter" style={{ background: "rgba(0,0,0,.7)" }} onClick={e => e.target === e.currentTarget && setOpen(false)} role="dialog" aria-modal="true" aria-label="שמירת בילד">
+          <form onSubmit={save} className="hud w-full max-w-sm p-5 rise">
+            <h2 className="font-black">שמירה להאנגר</h2>
+            <label htmlFor="hangar-name" className="block text-sm text-muted mt-3 mb-1">שם הבילד</label>
+            <input id="hangar-name" autoFocus value={name} onChange={e => setName(e.target.value)} maxLength={40} className="w-full bg-panel2 border border-line p-3 text-fg" />
+            <div className="flex gap-2 mt-4"><button className="btn btn-neon flex-1">שמור</button><button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>ביטול</button></div>
+          </form>
+        </div>
+      )}
+    </>
+  );
+}
+
+function Hangar({ hangar, setHangar, setIds, setTools, setMode }) {
+  const [confirm, setConfirm] = useState(null);
+  function load(h) { setIds(h.ids); setTools(h.tools || []); setMode(h.mode); go("build"); }
+  return (
+    <div className="rise">
+      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
+      <h1 className="text-2xl font-black mt-2">האנגר שלי</h1>
+      <p className="text-sm text-muted">בילדים ששמרת במכשיר הזה. אפשר לטעון, להשוות ולמחוק.</p>
+      {!hangar.length && <div className="hud p-6 mt-4 text-center"><p className="text-muted">ההאנגר ריק. בנה בילד בקונפיגורטור ולחץ "שמור להאנגר".</p><a href="#build" className="btn btn-neon mt-4">לקונפיגורטור</a></div>}
+      <div className="space-y-2 mt-4">
+        {hangar.map(h => {
+          const b = {}; Object.entries(h.ids || {}).forEach(([c, id]) => { if (id && BY_ID[id]) b[c] = BY_ID[id]; });
+          const full = { frame: null, motors: null, stack: null, vtx: null, camera: null, receiver: null, props: null, battery: null, radio: null, goggles: null, charger: null, bnf: null, ...b };
+          const errs = check(full).filter(i => i.level === "error").length;
+          const tt = totals(full, (h.tools || []).map(x => BY_ID[x]).filter(Boolean));
+          const pf = performance(full);
+          return (
+            <div key={h.id} className="border border-line bg-panel p-4">
+              <div className="flex justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="font-bold">{h.name}</h3>
+                  <p className="text-xs text-muted">{h.mode === "bnf" ? "מוכן (BNF)" : "בנייה"} · נשמר {new Date(h.savedAt).toLocaleDateString("he-IL")}</p>
+                </div>
+                <div className="osd text-left text-sm shrink-0"><div>{ils(tt.price)}</div><div className={errs ? "text-bad text-xs" : "text-neon text-xs"}>{errs ? `${errs} ERR` : "OK"}</div></div>
+              </div>
+              {pf && <p className="osd text-xs text-muted mt-2">{tt.auw}g · TWR <span dir="ltr">{pf.twr}:1</span> · <span dir="ltr">{pf.flightMin[0]}–{pf.flightMin[1]}</span> דק'</p>}
+              <div className="flex gap-2 mt-3">
+                <button className="btn btn-neon !py-2 text-sm" onClick={() => load(h)}>טען לקונפיגורטור</button>
+                {confirm === h.id
+                  ? <button className="btn btn-ghost !py-2 text-sm text-bad" onClick={() => { setHangar(hangar.filter(x => x.id !== h.id)); setConfirm(null); }}>בטוח? מחק</button>
+                  : <button className="btn btn-ghost !py-2 text-sm" onClick={() => setConfirm(h.id)}>מחק</button>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---------- assembly guide ----------
+function Guide({ build, guideDone, setGuideDone, mode }) {
+  const steps = assemblySteps(build);
+  const key = (mode === "bnf" ? (build.bnf && build.bnf.id) : (build.frame && build.frame.id)) || "none";
+  const dm = guideDone[key] || {};
+  const n = steps.filter(s => dm[s.id]).length;
+  const toggle = id => setGuideDone({ ...guideDone, [key]: { ...dm, [id]: !dm[id] } });
+  const empty = !Object.values(build).some(Boolean);
+  return (
+    <div className="rise">
+      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
+      <h1 className="text-2xl font-black mt-2">{mode === "bnf" ? "הכנה לטיסה" : "מדריך הרכבה"}</h1>
+      <p className="text-sm text-muted">{empty ? "בחר חלקים בקונפיגורטור, והמדריך יתאים את עצמו אליהם." : "הצעדים נכתבו לפי החלקים שבחרת. סמן כל צעד כשסיימת."}</p>
+      <div className="h-1 bg-panel2 mt-4"><div className="h-full bg-neon transition-all" style={{ width: `${n / steps.length * 100}%` }} /></div>
+      <p className="osd text-xs text-muted mt-1">{n}/{steps.length}</p>
+      <ol className="space-y-2.5 mt-4">
+        {steps.map((s, k) => (
+          <li key={s.id} className={`border bg-panel p-4 ${dm[s.id] ? "border-line opacity-70" : "border-line"}`}>
+            <div className="flex gap-3">
+              <button onClick={() => toggle(s.id)} className={`shrink-0 w-8 h-8 grid place-items-center border osd text-sm ${dm[s.id] ? "bg-neon text-ink border-neon" : "border-line text-muted"}`} aria-label={dm[s.id] ? "סמן כלא בוצע" : "סמן כבוצע"} aria-pressed={!!dm[s.id]}>{dm[s.id] ? "✓" : k + 1}</button>
+              <div className="min-w-0">
+                <h3 className="font-bold leading-snug">{s.title}</h3>
+                <p className="text-sm leading-relaxed mt-1" style={{ color: "#c3cfcc" }}>{s.body}</p>
+                {s.warn && <p className="text-sm text-warn mt-2">⚠ {s.warn}</p>}
+                {s.tools && <div className="flex flex-wrap gap-1 mt-2">{s.tools.map(t => <span key={t} className="chip">{t}</span>)}</div>}
+                {s.link && <a href={s.link} className="text-neon underline text-sm inline-block mt-2">פתח ←</a>}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+// ---------- betaflight ----------
+function BetaflightView({ build }) {
+  const { cli, checks, digital } = betaflightCli(build);
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try { await navigator.clipboard.writeText(cli); setCopied(true); setTimeout(() => setCopied(false), 1800); }
+    catch { const el = document.getElementById("cli-box"); if (el) { el.focus(); el.select(); } }
+  }
+  return (
+    <div className="rise">
+      <a href="#build" className="osd text-xs text-muted">→ חזרה לקונפיגורטור</a>
+      <h1 className="text-2xl font-black mt-2">עוזר Betaflight</h1>
+      <p className="text-sm text-muted">קובץ הגדרות שמתאים לבילד שלך{digital ? " (כולל OSD למשדר הדיגיטלי)" : ""}. מדביקים בטאב CLI של Betaflight Configurator ולוחצים Enter.</p>
+      <div className="hud mt-4">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-line">
+          <span className="osd text-xs text-neon">CLI · BF 4.4/4.5</span>
+          <button onClick={copy} className="osd text-xs border border-line px-2 py-1 hover:border-muted">{copied ? "✓ הועתק" : "העתק"}</button>
+        </div>
+        <textarea id="cli-box" readOnly value={cli} dir="ltr" spellCheck="false" className="w-full bg-transparent osd text-[12.5px] leading-relaxed p-3 h-80 resize-y text-fg focus:outline-none" />
+      </div>
+      <p className="text-xs text-warn mt-2">⚠ ההגדרות מניחות מקלט על UART2 ו-VTX על UART1, כמו במדריך ההרכבה. חיברתם אחרת? שנו את מספרי ה-serial. תמיד בלי פרופלורים כשהרחפן מחובר למחשב.</p>
+      <h2 className="font-black text-lg mt-7">בדיקות אחרי ההדבקה</h2>
+      <ul className="mt-2 space-y-2">{checks.map(c => <li key={c} className="flex gap-2 text-sm"><span className="text-neon osd">▸</span>{c}</li>)}</ul>
+    </div>
+  );
+}
+
+// ---------- AI tutor ----------
+function Tutor({ build, issues, view }) {
+  const [open, setOpen] = useState(false);
+  const [msgs, setMsgs] = useState(() => load("tutor", []));
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => save("tutor", msgs.slice(-20)), [msgs]);
+  const starters = ["למה צריך Smoke Stopper?", "מה ההבדל בין Angle ל-Acro?", "הבילד שלי מתאים למתחיל?"];
+  async function ask(q) {
+    const text = (q || input).trim();
+    if (!text || busy) return;
+    const next = [...msgs, { role: "user", content: text }];
+    setMsgs(next); setInput(""); setBusy(true);
+    const ctxBuild = {}; Object.entries(build).forEach(([c, p]) => { if (p) ctxBuild[CATEGORIES[c].label] = title(p); });
+    try {
+      const r = await fetch("/api/tutor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, context: { build: ctxBuild, issues: issues.filter(i => i.level !== "ok"), page: view } }) });
+      const ct = r.headers.get("content-type") || "";
+      const data = ct.includes("json") ? await r.json() : null;
+      const reply = data && (data.reply || data.message);
+      setMsgs([...next, { role: "assistant", content: reply || "המורה זמין אחרי העלאת האתר ל-Vercel עם מפתח API. בינתיים: השיעורים ומדריך ההרכבה מכסים את רוב השאלות.", error: !data || !data.reply }]);
+    } catch {
+      setMsgs([...next, { role: "assistant", content: "אין חיבור למורה כרגע. נסה שוב בעוד רגע.", error: true }]);
+    } finally { setBusy(false); }
+  }
+  return (
+    <>
+      {!open && (
+        <button onClick={() => setOpen(true)} className="fixed z-40 btn btn-neon !rounded-full !px-4 !py-3 text-sm" style={{ left: "calc(16px + env(safe-area-inset-left, 0px))", bottom: view === "build" ? "calc(150px + env(safe-area-inset-bottom, 0px))" : "calc(74px + env(safe-area-inset-bottom, 0px))" }} aria-label="שאל את המורה">
+          ? מורה AI
+        </button>
+      )}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,.6)" }} onClick={e => e.target === e.currentTarget && setOpen(false)} role="dialog" aria-modal="true" aria-label="המורה של Go4FPV">
+          <div className="w-full max-w-lg bg-panel border border-line h-[78vh] flex flex-col rise" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+            <div className="flex items-center justify-between p-3 border-b border-line">
+              <div><h2 className="font-black">המורה של {CONFIG.BRAND}</h2><p className="text-[11px] text-muted">מכיר את הבילד שלך. לא מחליף את מנוע התאימות ואת צ'קליסט הבטיחות.</p></div>
+              <button onClick={() => setOpen(false)} className="osd text-muted px-2" aria-label="סגור">✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+              {!msgs.length && <div className="text-sm text-muted">שאל כל שאלה על בנייה, הגדרות או טיסה. לדוגמה:
+                <div className="flex flex-wrap gap-2 mt-3">{starters.map(s => <button key={s} onClick={() => ask(s)} className="border border-line px-3 py-1.5 text-fg hover:border-muted">{s}</button>)}</div></div>}
+              {msgs.map((m, k) => (
+                <div key={k} className={`max-w-[88%] p-3 text-sm leading-relaxed whitespace-pre-wrap ${m.role === "user" ? "mr-auto ml-0 bg-panel2 border border-line" : `ml-auto mr-0 border ${m.error ? "lv-warn" : "bd-neon bg-neon-soft"}`}`} style={m.role === "user" ? { marginLeft: 0, marginRight: "auto" } : { marginRight: 0, marginLeft: "auto", color: m.error ? undefined : "var(--fg)" }}>{m.content}</div>
+              ))}
+              {busy && <div className="osd text-xs text-neon blink">המורה חושב…</div>}
+            </div>
+            <form onSubmit={e => { e.preventDefault(); ask(); }} className="p-3 border-t border-line flex gap-2">
+              <label htmlFor="tutor-input" className="sr-only">שאלה למורה</label>
+              <input id="tutor-input" value={input} onChange={e => setInput(e.target.value)} maxLength={1500} placeholder="מה רצית לשאול?" className="flex-1 bg-panel2 border border-line p-3 text-fg" />
+              <button className="btn btn-neon" disabled={busy}>שלח</button>
+            </form>
+            {msgs.length > 0 && <button onClick={() => setMsgs([])} className="text-[11px] text-muted underline pb-2">שיחה חדשה</button>}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

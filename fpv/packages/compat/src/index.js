@@ -214,3 +214,42 @@ export function totals(b, tools = []) {
   const auw = flying.filter(Boolean).reduce((s, p) => s + (p.weight || 0), 0);
   return { price, auw };
 }
+
+/**
+ * Rough performance estimate. Everything here is an approximation for orientation, not a measurement:
+ * hover efficiency (g/W) by prop class, a flying-style multiplier, and usable battery energy.
+ * Returns null when the build lacks motors/props/battery (or BNF/battery).
+ */
+export function performance(b) {
+  const bat = b.battery;
+  if (!bat) return null;
+  let thrust, propSize;
+  if (b.bnf) { thrust = b.bnf.thrustTotalG; propSize = b.bnf.propSize; }
+  else {
+    if (!b.motors || !b.props) return null;
+    thrust = b.motors.thrustG ? b.motors.thrustG * 4 : null;
+    propSize = b.props.size;
+  }
+  const { auw } = totals(b);
+  if (!thrust || !auw) return null;
+  const cls = propSize >= 6.5 ? "longrange" : propSize >= 4.5 ? "freestyle" : propSize >= 3 ? "cinematic" : "whoop";
+  const eff = { longrange: 8, freestyle: 5.5, cinematic: 3.5, whoop: 2.5 }[cls];      // grams lifted per watt in hover
+  const style = { longrange: 1.3, freestyle: 2.2, cinematic: 1.6, whoop: 1.5 }[cls];  // average power vs hover
+  const usableWh = bat.cells * 3.7 * bat.mah / 1000 * (bat.chem === "liion" ? 0.85 : 0.8);
+  const hoverW = auw / eff;
+  const twr = thrust / auw;
+  const flyMin = usableWh / (hoverW * style) * 60;
+  const hoverMin = usableWh / hoverW * 60;
+  const notes = [];
+  if (twr < 3) notes.push({ level: "warn", msg: `יחס דחף-משקל ${twr.toFixed(1)}:1 נמוך. הרחפן ירגיש כבד ואיטי; לפריסטייל מכוונים ל-5:1 ומעלה.` });
+  else if (cls === "freestyle" && twr > 11) notes.push({ level: "ok", msg: "יחס דחף-משקל גבוה מאוד: רחפן חד וחזק. התחילו עם גז עדין." });
+  if (cls === "freestyle" && bat.mah < 900) notes.push({ level: "warn", msg: "סוללה קטנה לרחפן 5\": זמן הטיסה יהיה קצר." });
+  return {
+    cls, auw, thrust, twr: Math.round(twr * 10) / 10,
+    hoverThrottle: Math.round(Math.min(1, Math.sqrt(auw / thrust)) * 100),
+    flightMin: [Math.max(0.5, flyMin * 0.8), flyMin * 1.15].map(x => Math.round(x * 10) / 10),
+    hoverMin: Math.round(hoverMin * 10) / 10,
+    usableWh: Math.round(usableWh * 10) / 10,
+    notes,
+  };
+}
