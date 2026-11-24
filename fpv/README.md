@@ -20,7 +20,7 @@ fpv/
 
 ## הרצה
 ```bash
-cd fpv/packages/compat && npm test          # 13/13
+cd fpv/packages/compat && npm test          # 16/16
 cd fpv/apps/web && npm install && npm run dev
 npm run build                               # → fpv/app/
 ```
