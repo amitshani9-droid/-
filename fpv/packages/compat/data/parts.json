@@ -1,0 +1,1086 @@
+{
+  "meta": {
+    "version": "0.1.0",
+    "currency": "ILS",
+    "updated": "2026-11-24",
+    "note": "Prototype dataset. Prices are rough estimates and every spec is verified:false until checked against the manufacturer page (to be replaced by fpv-parts-extractor output)."
+  },
+  "parts": [
+    {
+      "id": "frame-source-one-v5",
+      "cat": "frame",
+      "brand": "TBS",
+      "name": "Source One V5 5\"",
+      "price": 130,
+      "weight": 120,
+      "size": 5,
+      "maxProp": 5.1,
+      "motorMount": [
+        16
+      ],
+      "stackMount": [
+        30.5,
+        20
+      ],
+      "camWidth": [
+        19,
+        20
+      ],
+      "tags": [
+        "budget",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "frame-nazgul-evoque-f5",
+      "cat": "frame",
+      "brand": "iFlight",
+      "name": "Nazgul Evoque F5 5\"",
+      "price": 240,
+      "weight": 128,
+      "size": 5,
+      "maxProp": 5.1,
+      "motorMount": [
+        16
+      ],
+      "stackMount": [
+        30.5,
+        20
+      ],
+      "camWidth": [
+        19,
+        20
+      ],
+      "tags": [
+        "freestyle",
+        "cinematic"
+      ],
+      "verified": false
+    },
+    {
+      "id": "frame-mark5",
+      "cat": "frame",
+      "brand": "GEPRC",
+      "name": "Mark5 5\"",
+      "price": 280,
+      "weight": 122,
+      "size": 5,
+      "maxProp": 5.1,
+      "motorMount": [
+        16
+      ],
+      "stackMount": [
+        30.5,
+        20
+      ],
+      "camWidth": [
+        19,
+        20
+      ],
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "frame-chimera7",
+      "cat": "frame",
+      "brand": "iFlight",
+      "name": "Chimera7 Pro 7\"",
+      "price": 380,
+      "weight": 190,
+      "size": 7,
+      "maxProp": 7.5,
+      "motorMount": [
+        16,
+        19
+      ],
+      "stackMount": [
+        30.5,
+        20
+      ],
+      "camWidth": [
+        19,
+        20
+      ],
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "frame-cinelog35",
+      "cat": "frame",
+      "brand": "GEPRC",
+      "name": "Cinelog35 V2 3.5\" (סינווופ)",
+      "price": 260,
+      "weight": 95,
+      "size": 3.5,
+      "maxProp": 3.5,
+      "motorMount": [
+        12
+      ],
+      "stackMount": [
+        20
+      ],
+      "camWidth": [
+        19,
+        20
+      ],
+      "tags": [
+        "cinematic",
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "mot-xing2-2207-1855",
+      "cat": "motors",
+      "brand": "iFlight",
+      "name": "XING2 2207 1855KV ×4",
+      "price": 360,
+      "weight": 128,
+      "stator": "2207",
+      "kv": 1855,
+      "cells": [
+        6,
+        6
+      ],
+      "mount": 16,
+      "maxA": 42,
+      "propRange": [
+        5,
+        5.1
+      ],
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "mot-velox-2207-1750",
+      "cat": "motors",
+      "brand": "T-Motor",
+      "name": "Velox V2207 V2 1750KV ×4",
+      "price": 320,
+      "weight": 132,
+      "stator": "2207",
+      "kv": 1750,
+      "cells": [
+        6,
+        6
+      ],
+      "mount": 16,
+      "maxA": 40,
+      "propRange": [
+        5,
+        5.1
+      ],
+      "tags": [
+        "freestyle",
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "mot-xing2-2207-2755",
+      "cat": "motors",
+      "brand": "iFlight",
+      "name": "XING2 2207 2755KV ×4 (4S)",
+      "price": 360,
+      "weight": 128,
+      "stator": "2207",
+      "kv": 2755,
+      "cells": [
+        4,
+        4
+      ],
+      "mount": 16,
+      "maxA": 45,
+      "propRange": [
+        5,
+        5.1
+      ],
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "mot-xing2-2806-1300",
+      "cat": "motors",
+      "brand": "iFlight",
+      "name": "XING2 2806.5 1300KV ×4",
+      "price": 440,
+      "weight": 196,
+      "stator": "2806.5",
+      "kv": 1300,
+      "cells": [
+        6,
+        6
+      ],
+      "mount": 16,
+      "maxA": 40,
+      "propRange": [
+        7,
+        7.5
+      ],
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "mot-speedx2-2105-2650",
+      "cat": "motors",
+      "brand": "GEPRC",
+      "name": "SPEEDX2 2105.5 2650KV ×4",
+      "price": 300,
+      "weight": 88,
+      "stator": "2105.5",
+      "kv": 2650,
+      "cells": [
+        4,
+        6
+      ],
+      "mount": 12,
+      "maxA": 30,
+      "propRange": [
+        3,
+        3.5
+      ],
+      "tags": [
+        "cinematic",
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "stack-speedybee-f405-v4",
+      "cat": "stack",
+      "brand": "SpeedyBee",
+      "name": "F405 V4 + BLS 55A Stack",
+      "price": 320,
+      "weight": 26,
+      "cells": [
+        3,
+        6
+      ],
+      "escA": 55,
+      "mount": 30.5,
+      "uarts": 5,
+      "bec": [
+        5,
+        9
+      ],
+      "connector": "XT60",
+      "tags": [
+        "freestyle",
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "stack-speedybee-f405-mini",
+      "cat": "stack",
+      "brand": "SpeedyBee",
+      "name": "F405 Mini + BLS 35A Stack (20×20)",
+      "price": 260,
+      "weight": 16,
+      "cells": [
+        3,
+        6
+      ],
+      "escA": 35,
+      "mount": 20,
+      "uarts": 4,
+      "bec": [
+        5,
+        9
+      ],
+      "connector": "XT60",
+      "tags": [
+        "cinematic",
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "stack-blitz-f7-e55",
+      "cat": "stack",
+      "brand": "iFlight",
+      "name": "BLITZ F7 + E55 4in1 Stack",
+      "price": 540,
+      "weight": 28,
+      "cells": [
+        2,
+        6
+      ],
+      "escA": 55,
+      "mount": 30.5,
+      "uarts": 6,
+      "bec": [
+        5,
+        10
+      ],
+      "connector": "XT60",
+      "tags": [
+        "freestyle",
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "stack-f411-aio-25a",
+      "cat": "stack",
+      "brand": "JHEMCU",
+      "name": "F411 AIO 25A (2-4S, 25.5)",
+      "price": 150,
+      "weight": 7,
+      "cells": [
+        2,
+        4
+      ],
+      "escA": 25,
+      "mount": 25.5,
+      "uarts": 2,
+      "bec": [
+        5
+      ],
+      "connector": "XT30",
+      "tags": [
+        "whoop",
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "vtx-dji-o4-pro",
+      "cat": "vtx",
+      "brand": "DJI",
+      "name": "O4 Air Unit Pro (כולל מצלמה)",
+      "price": 950,
+      "weight": 33,
+      "system": "dji_o4",
+      "vin": [
+        7.4,
+        26.4
+      ],
+      "needsUart": true,
+      "includesCamera": true,
+      "camWidth": 20,
+      "tags": [
+        "cinematic",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "vtx-dji-o3",
+      "cat": "vtx",
+      "brand": "DJI",
+      "name": "O3 Air Unit (כולל מצלמה)",
+      "price": 800,
+      "weight": 36,
+      "system": "dji_o3",
+      "vin": [
+        7.4,
+        26.4
+      ],
+      "needsUart": true,
+      "includesCamera": true,
+      "camWidth": 20,
+      "tags": [
+        "cinematic",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "vtx-walksnail-v2",
+      "cat": "vtx",
+      "brand": "Walksnail",
+      "name": "Avatar HD Pro Kit V2 (כולל מצלמה)",
+      "price": 620,
+      "weight": 30,
+      "system": "walksnail",
+      "vin": [
+        7.4,
+        26
+      ],
+      "needsUart": true,
+      "includesCamera": true,
+      "camWidth": 19,
+      "tags": [
+        "freestyle",
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "vtx-rush-tank-solo",
+      "cat": "vtx",
+      "brand": "RushFPV",
+      "name": "Tank Solo 1.6W (אנלוגי)",
+      "price": 140,
+      "weight": 9,
+      "system": "analog",
+      "vin": [
+        7,
+        36
+      ],
+      "needsUart": false,
+      "includesCamera": false,
+      "tags": [
+        "budget",
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "vtx-unify-pro32",
+      "cat": "vtx",
+      "brand": "TBS",
+      "name": "Unify Pro32 HV (אנלוגי)",
+      "price": 170,
+      "weight": 6,
+      "system": "analog",
+      "vin": [
+        6,
+        26
+      ],
+      "needsUart": false,
+      "includesCamera": false,
+      "tags": [
+        "budget",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "cam-ratel2",
+      "cat": "camera",
+      "brand": "Caddx",
+      "name": "Ratel 2 (מיקרו 19 מ\"מ, אנלוגי)",
+      "price": 120,
+      "weight": 6,
+      "system": "analog",
+      "width": 19,
+      "vin": [
+        5,
+        40
+      ],
+      "tags": [
+        "budget",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "cam-phoenix2",
+      "cat": "camera",
+      "brand": "RunCam",
+      "name": "Phoenix 2 (מיקרו 19 מ\"מ, אנלוגי)",
+      "price": 125,
+      "weight": 8,
+      "system": "analog",
+      "width": 19,
+      "vin": [
+        5,
+        36
+      ],
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "cam-razer-nano",
+      "cat": "camera",
+      "brand": "Foxeer",
+      "name": "Razer Nano (ננו 14 מ\"מ, אנלוגי)",
+      "price": 85,
+      "weight": 4,
+      "system": "analog",
+      "width": 14,
+      "vin": [
+        4.5,
+        25
+      ],
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "rx-rp1",
+      "cat": "receiver",
+      "brand": "RadioMaster",
+      "name": "RP1 V2 ELRS 2.4GHz",
+      "price": 60,
+      "weight": 1,
+      "protocol": "elrs24",
+      "uart": 1,
+      "tags": [
+        "budget",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "rx-ep2",
+      "cat": "receiver",
+      "brand": "HappyModel",
+      "name": "EP2 ELRS 2.4GHz",
+      "price": 45,
+      "weight": 1,
+      "protocol": "elrs24",
+      "uart": 1,
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "rx-rp3",
+      "cat": "receiver",
+      "brand": "RadioMaster",
+      "name": "RP3 Diversity ELRS 2.4GHz",
+      "price": 95,
+      "weight": 2,
+      "protocol": "elrs24",
+      "uart": 1,
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "rx-crsf-nano",
+      "cat": "receiver",
+      "brand": "TBS",
+      "name": "Crossfire Nano RX (900MHz)",
+      "price": 130,
+      "weight": 1,
+      "protocol": "crsf900",
+      "uart": 1,
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "props-hq-5x43x3",
+      "cat": "props",
+      "brand": "HQProp",
+      "name": "5×4.3×3 (4 סטים)",
+      "price": 60,
+      "weight": 18,
+      "size": 5,
+      "tags": [
+        "freestyle",
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "props-gemfan-51466",
+      "cat": "props",
+      "brand": "Gemfan",
+      "name": "Hurricane 51466 5.1\" (4 סטים)",
+      "price": 65,
+      "weight": 18,
+      "size": 5.1,
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "props-hq-7x4x3",
+      "cat": "props",
+      "brand": "HQProp",
+      "name": "7×4×3 (2 סטים)",
+      "price": 70,
+      "weight": 30,
+      "size": 7,
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "props-gemfan-d90",
+      "cat": "props",
+      "brand": "Gemfan",
+      "name": "D90 3.5\" לסינווופ (4 סטים)",
+      "price": 45,
+      "weight": 12,
+      "size": 3.5,
+      "tags": [
+        "cinematic",
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-cnhl-6s-1100",
+      "cat": "battery",
+      "brand": "CNHL",
+      "name": "Black 6S 1100mAh 100C",
+      "price": 150,
+      "weight": 185,
+      "cells": 6,
+      "mah": 1100,
+      "chem": "lipo",
+      "connector": "XT60",
+      "tags": [
+        "freestyle",
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-tattu-6s-1200",
+      "cat": "battery",
+      "brand": "Tattu",
+      "name": "R-Line 6S 1200mAh 150C",
+      "price": 230,
+      "weight": 205,
+      "cells": 6,
+      "mah": 1200,
+      "chem": "lipo",
+      "connector": "XT60",
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-cnhl-4s-1500",
+      "cat": "battery",
+      "brand": "CNHL",
+      "name": "Black 4S 1500mAh 100C",
+      "price": 110,
+      "weight": 180,
+      "cells": 4,
+      "mah": 1500,
+      "chem": "lipo",
+      "connector": "XT60",
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-gnb-4s-850-xt30",
+      "cat": "battery",
+      "brand": "GNB",
+      "name": "4S 850mAh 120C (XT30)",
+      "price": 80,
+      "weight": 98,
+      "cells": 4,
+      "mah": 850,
+      "chem": "lipo",
+      "connector": "XT30",
+      "tags": [
+        "cinematic",
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-gnb-4s-850-xt60",
+      "cat": "battery",
+      "brand": "GNB",
+      "name": "4S 850mAh 120C (XT60)",
+      "price": 80,
+      "weight": 100,
+      "cells": 4,
+      "mah": 850,
+      "chem": "lipo",
+      "connector": "XT60",
+      "tags": [
+        "cinematic"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-bt20-1s-300",
+      "cat": "battery",
+      "brand": "BetaFPV",
+      "name": "1S 300mAh BT2.0 (5 יח')",
+      "price": 90,
+      "weight": 8,
+      "cells": 1,
+      "mah": 300,
+      "chem": "lipo",
+      "connector": "BT2.0",
+      "tags": [
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bat-p45b-6s1p",
+      "cat": "battery",
+      "brand": "DIY",
+      "name": "Li-ion 6S1P 4500mAh (Molicel P45B)",
+      "price": 320,
+      "weight": 440,
+      "cells": 6,
+      "mah": 4500,
+      "chem": "liion",
+      "connector": "XT60",
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "radio-pocket",
+      "cat": "radio",
+      "brand": "RadioMaster",
+      "name": "Pocket ELRS",
+      "price": 300,
+      "weight": 270,
+      "protocols": [
+        "elrs24"
+      ],
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "radio-boxer",
+      "cat": "radio",
+      "brand": "RadioMaster",
+      "name": "Boxer ELRS",
+      "price": 560,
+      "weight": 390,
+      "protocols": [
+        "elrs24"
+      ],
+      "tags": [
+        "freestyle",
+        "cinematic"
+      ],
+      "verified": false
+    },
+    {
+      "id": "radio-tx16s",
+      "cat": "radio",
+      "brand": "RadioMaster",
+      "name": "TX16S MKII ELRS",
+      "price": 820,
+      "weight": 750,
+      "protocols": [
+        "elrs24"
+      ],
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "radio-tango2",
+      "cat": "radio",
+      "brand": "TBS",
+      "name": "Tango 2 Pro (Crossfire)",
+      "price": 850,
+      "weight": 480,
+      "protocols": [
+        "crsf900"
+      ],
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gog-dji-3",
+      "cat": "goggles",
+      "brand": "DJI",
+      "name": "Goggles 3",
+      "price": 2200,
+      "weight": 470,
+      "systems": [
+        "dji_o3",
+        "dji_o4"
+      ],
+      "tags": [
+        "cinematic",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gog-dji-n3",
+      "cat": "goggles",
+      "brand": "DJI",
+      "name": "Goggles N3",
+      "price": 950,
+      "weight": 450,
+      "systems": [
+        "dji_o3",
+        "dji_o4"
+      ],
+      "tags": [
+        "budget",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gog-walksnail-x",
+      "cat": "goggles",
+      "brand": "Walksnail",
+      "name": "Avatar HD Goggles X",
+      "price": 1800,
+      "weight": 300,
+      "systems": [
+        "walksnail"
+      ],
+      "tags": [
+        "freestyle",
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gog-skyzone-04x",
+      "cat": "goggles",
+      "brand": "Skyzone",
+      "name": "SKY04X Pro (אנלוגי)",
+      "price": 1700,
+      "weight": 380,
+      "systems": [
+        "analog"
+      ],
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gog-ev800d",
+      "cat": "goggles",
+      "brand": "Eachine",
+      "name": "EV800D (אנלוגי, תקציבי)",
+      "price": 350,
+      "weight": 400,
+      "systems": [
+        "analog"
+      ],
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "chg-m7",
+      "cat": "charger",
+      "brand": "ToolkitRC",
+      "name": "M7 (DC)",
+      "price": 250,
+      "weight": 260,
+      "maxCells": 6,
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "chg-608ac",
+      "cat": "charger",
+      "brand": "ISDT",
+      "name": "608AC (AC/DC)",
+      "price": 380,
+      "weight": 420,
+      "maxCells": 6,
+      "tags": [
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "chg-bt20-1s",
+      "cat": "charger",
+      "brand": "BetaFPV",
+      "name": "מטען 1S BT2.0 (6 ערוצים)",
+      "price": 80,
+      "weight": 60,
+      "maxCells": 1,
+      "tags": [
+        "whoop"
+      ],
+      "verified": false
+    },
+    {
+      "id": "tool-pinecil",
+      "cat": "tools",
+      "brand": "Pine64",
+      "name": "Pinecil V2 מלחם",
+      "price": 170,
+      "weight": 0,
+      "kind": "iron",
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "tool-ts101",
+      "cat": "tools",
+      "brand": "Miniware",
+      "name": "TS101 מלחם",
+      "price": 280,
+      "weight": 0,
+      "kind": "iron",
+      "tags": [],
+      "verified": false
+    },
+    {
+      "id": "tool-smoke-stopper",
+      "cat": "tools",
+      "brand": "Generic",
+      "name": "Smoke Stopper (מגן קצר)",
+      "price": 35,
+      "weight": 0,
+      "kind": "smoke",
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "tool-lipo-bag",
+      "cat": "tools",
+      "brand": "Generic",
+      "name": "שקית LiPo חסינת אש",
+      "price": 40,
+      "weight": 0,
+      "kind": "lipobag",
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "tool-straps",
+      "cat": "tools",
+      "brand": "Generic",
+      "name": "רצועות סוללה (5 יח')",
+      "price": 25,
+      "weight": 0,
+      "kind": "straps",
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "tool-flux",
+      "cat": "tools",
+      "brand": "Generic",
+      "name": "פלקס + בדיל 63/37",
+      "price": 45,
+      "weight": 0,
+      "kind": "flux",
+      "tags": [
+        "budget"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bnf-nazgul-f5-o3",
+      "cat": "bnf",
+      "brand": "iFlight",
+      "name": "Nazgul Evoque F5 V2 6S DJI O3 (BNF ELRS)",
+      "price": 2700,
+      "weight": 460,
+      "system": "dji_o3",
+      "protocol": "elrs24",
+      "cells": 6,
+      "connector": "XT60",
+      "class": "freestyle",
+      "tags": [
+        "freestyle",
+        "cinematic"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bnf-nazgul-f5-analog",
+      "cat": "bnf",
+      "brand": "iFlight",
+      "name": "Nazgul5 V3 6S אנלוגי (BNF ELRS)",
+      "price": 1300,
+      "weight": 420,
+      "system": "analog",
+      "protocol": "elrs24",
+      "cells": 6,
+      "connector": "XT60",
+      "class": "freestyle",
+      "tags": [
+        "budget",
+        "freestyle"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bnf-cinelog35-o4",
+      "cat": "bnf",
+      "brand": "GEPRC",
+      "name": "Cinelog35 V2 DJI O4 Pro (BNF ELRS)",
+      "price": 2600,
+      "weight": 300,
+      "system": "dji_o4",
+      "protocol": "elrs24",
+      "cells": 4,
+      "connector": "XT30",
+      "class": "cinematic",
+      "tags": [
+        "cinematic"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bnf-chimera7-o3",
+      "cat": "bnf",
+      "brand": "iFlight",
+      "name": "Chimera7 Pro V2 6S DJI O3 (BNF ELRS)",
+      "price": 3600,
+      "weight": 620,
+      "system": "dji_o3",
+      "protocol": "elrs24",
+      "cells": 6,
+      "connector": "XT60",
+      "class": "longrange",
+      "tags": [
+        "longrange"
+      ],
+      "verified": false
+    },
+    {
+      "id": "bnf-air65",
+      "cat": "bnf",
+      "brand": "BetaFPV",
+      "name": "Air65 ווף לבית, אנלוגי 1S (BNF ELRS)",
+      "price": 450,
+      "weight": 20,
+      "system": "analog",
+      "protocol": "elrs24",
+      "cells": 1,
+      "connector": "BT2.0",
+      "class": "whoop",
+      "tags": [
+        "whoop",
+        "budget"
+      ],
+      "verified": false
+    }
+  ]
+}

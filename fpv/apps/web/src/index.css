@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Layout: one mobile-first column like a goggles HUD; OSD mono for every number. Single dark look by design. */
+:root {
+  color-scheme: dark;
+  --ink: #07090b;      /* goggles black */
+  --panel: #0d1114;
+  --panel2: #131a1e;
+  --line: rgba(160, 230, 210, 0.12);
+  --fg: #e6eeec;
+  --muted: #86959a;
+  --neon: #4ff0c4;     /* the one neon accent */
+  --warn: #ffc857;
+  --bad: #ff5d5d;
+}
+
+html, body, #root { height: 100%; }
+body { background: var(--ink); color: var(--fg); font-family: Heebo, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 50; background: var(--ink); }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.osd { font-family: "Share Tech Mono", ui-monospace, monospace; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* HUD frame: corner brackets instead of rounded cards */
+.hud { position: relative; background: var(--panel); border: 1px solid var(--line); }
+.hud::before, .hud::after { content: ""; position: absolute; width: 10px; height: 10px; border-color: var(--neon); opacity: .7; pointer-events: none; }
+.hud::before { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+.hud::after { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; font-weight: 700; border-radius: 4px; padding: .85rem 1.2rem; transition: transform .12s, background .2s, box-shadow .2s; }
+.btn:active { transform: scale(.97); }
+.btn-neon { background: var(--neon); color: #03130e; box-shadow: 0 0 24px -6px var(--neon); }
+.btn-ghost { border: 1px solid var(--line); background: var(--panel2); color: var(--fg); }
+.btn:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--neon); outline-offset: 2px; }
+
+.chip { font-family: "Share Tech Mono", monospace; font-size: 11px; padding: 2px 7px; border: 1px solid var(--line); color: var(--muted); border-radius: 3px; white-space: nowrap; }
+
+.scan { background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 3px); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.prop { transform-box: fill-box; transform-origin: center; animation: spin .18s linear infinite; }
+.prop.rev { animation-direction: reverse; }
+@keyframes blink { 50% { opacity: .25; } }
+.blink { animation: blink 1.2s steps(2) infinite; }
+@keyframes rise { from { opacity: .3; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise .35s cubic-bezier(.2,.8,.2,1); }
+@keyframes shake { 20%, 60% { transform: translateX(-3px); } 40%, 80% { transform: translateX(3px); } }
+.shake { animation: shake .35s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .prop, .blink, .rise, .shake { animation: none !important; }
+}
+.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { scrollbar-width: none; }
+
+.lv-error { color: var(--bad); border-color: rgba(255,93,93,.4); background: rgba(255,93,93,.08); }
+.lv-warn { color: var(--warn); border-color: rgba(255,200,87,.4); background: rgba(255,200,87,.08); }
+.lv-ok { color: var(--neon); border-color: rgba(79,240,196,.3); background: rgba(79,240,196,.05); }
+.bd-error { border-color: rgba(255,93,93,.45) !important; }
+.bd-neon { border-color: rgba(79,240,196,.55) !important; }
+.bg-neon-soft { background: rgba(79,240,196,.07); }
